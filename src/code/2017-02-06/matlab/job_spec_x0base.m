@@ -43,11 +43,13 @@ switch optimScope
 end
 
 rootDir           = fileStr.root;
-switch optimScope
-    case 'stop'
-        bestXGO       = fileStr.bestXGO;
-    case 'all'
-        bestXSTOP     = fileStr.bestXSTOP;
+if isempty(x0Base)
+    switch optimScope
+        case 'stop'
+            bestXGO       = fileStr.bestXGO;
+        case 'all'
+            bestXSTOP     = fileStr.bestXSTOP;
+    end
 end
 nameSAMGeneral    = 'SAM_%sTrials.mat';
 nameSAMModel      = 'SAM_%sTrials_model%.3d.mat';
@@ -202,13 +204,33 @@ for iSubjInd = 1 : length(subj)
             
         case 'all'
             
-            % Load best-fitting GO and STOP parameters
-            ds = dataset('File',fullfile(sprintf(bestXSTOP,iSubj,trialVarStr,modelArch,iModel)),'HeaderLines',0);
-            
-            % Extract optimized X
-            iBestX = cell2mat(cellfun(@(in1) ~isempty(regexp(in1,'^BestX.*', 'once')),ds.Properties.VarNames,'Uni',0));
-            X = double(ds(1,iBestX));
-            
+            if ~isempty(x0Base)
+                % Determine number of parameter categories
+                nXCat = SAM.model.XCat.n;
+                
+                % Pre-allocate X
+                X = nan(1,SAM.model.variants.tree(iModel).XSpec.n.n);
+                
+                for iXCat = 1:nXCat
+                    
+                    % Identify the column indices for this paramater in the stop model
+                    iColXGO = SAM.model.variants.tree(iModel).XSpec.i.stop.iCatClass{1,iXCat};
+                    iColXSTOP = SAM.model.variants.tree(iModel).XSpec.i.stop.iCatClass{2,iXCat};
+                    
+                    % Extract the best-fitting GO parameters and put in X
+                    X(iColXGO) = x0Base{1,iXCat};
+                    X(iColXSTOP) = x0Base{2,iXCat};
+                    
+                end
+                
+            else
+                % Load best-fitting GO and STOP parameters
+                ds = dataset('File',fullfile(sprintf(bestXSTOP,iSubj,trialVarStr,modelArch,iModel)),'HeaderLines',0);
+                
+                % Extract optimized X
+                iBestX = cell2mat(cellfun(@(in1) ~isempty(regexp(in1,'^BestX.*', 'once')),ds.Properties.VarNames,'Uni',0));
+                X = double(ds(1,iBestX));
+            end
     end
     
     % Save X
@@ -233,16 +255,16 @@ for iSubjInd = 1 : length(subj)
         
         switch optimScope
             case 'go'
-              % Do nothing. Only need to downsample stop trial categories for plotting  
+                % Do nothing. Only need to downsample stop trial categories for plotting
             case {'stop'}
                 % Plot the trial categories with the top nPlot number of trials
                 nPlot = 10;
                 [s ind] = sort(SAM.optim.obs.nStopIErrorCCorr);
-%                 [s ind] = sort(SAM.optim.obs.nTotal);
+                %                 [s ind] = sort(SAM.optim.obs.nTotal);
                 indPlot = ind(end - (nPlot-1) : end);
                 prd = prd(indPlot,:);
                 SAM.optim.obs = SAM.optim.obs(indPlot,:);
-        end  
+        end
         sam_plot(SAM,prd);
         
         
@@ -255,7 +277,7 @@ for iSubjInd = 1 : length(subj)
         %             fprintf(1,'Chi^2 = %.2f, BIC = %.2f \n',cost,altCost)
         %     end
         
-
+        
     end
     
 end
