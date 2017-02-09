@@ -1,0 +1,23 @@
+# SAM structures of starting values (.mat), fitting logs (.mat), and fVal_BestX (.txt) files #
+######################
+*startVal*2014*
+*startVal*2015*
+*startVal*2016*
+
+# Saved plots #
+######################
+*.pdf
+*.png
+*.jpg
+
+# html version of ipython notebooks #
+######################
+*.html
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes

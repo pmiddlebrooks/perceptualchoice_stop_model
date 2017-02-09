@@ -1,0 +1,45 @@
+#!/bin/bash
+# 
+# exe_job_optim_x.txt 
+# 
+# N.B. Make sure that file's permissions allow others to execute this file
+# N.B. Make sure that you update path strings and SBATCH .txt-file below
+
+pathStr="/scratch/middlepg/perceptualchoice_stop_model/data/2017-01-02/preproc01/subj%.2d/dt%d/%s/%s/SAM_%sTrials_model%.3d.mat";
+
+# Optimization scope
+optimScope="go";
+
+# Time step
+dt="5";
+
+# Trial variability tag (for starting point, non-decision time, and rate)
+trialVar="trialvar";
+
+# Model architectures
+modelArch="crace cli cffi";
+
+# Model variants
+model="2 43 79 352 478";
+
+# Subject
+subject="1 2";
+
+# SBATCH Settings
+WALLTIME="6:00:00";
+PPN="4";
+MEM="12000";
+
+for iModelArch in `echo $modelArch`
+do
+	for iModel in `echo $model`
+	do
+		for iSubj in `echo $subject`
+		do
+			for iStartVal in {1..20}
+			do
+			sbatch --time=`echo $WALLTIME` --nodes=1 --mem=`echo $MEM` --cpus-per-task=8 --export=pathStr=`echo "$pathStr"`,optimScope=`echo "$optimScope"`,dt=`echo "$dt"`,trialVar=`echo "$trialVar"`,modelArch=`echo "$iModelArch"`,iModel=`echo "$iModel"`,iStartVal=`echo "$iStartVal"`,subject=`echo "$iSubj"`,processorsPerNode=`echo "$PPN"`, /scratch/middlepg/perceptualchoice_stop_model/src/code/2017-01-02/sbatch/sbatch_job_optim_x.txt
+			done
+		done
+	done		
+done    

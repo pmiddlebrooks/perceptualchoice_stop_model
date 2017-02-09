@@ -1,0 +1,4 @@
+#!/bin/bash
+#SBATCH --mail-user=paul.g.middlebrooks@vanderbilt.edu
+#SBATCH --output=/scratch/middlepg/perceptualchoice_stop_model/sbatch_output/sbatch_job_optim_x_$SBATCH_JOBID.out
+matlab < /scratch/middlepg/perceptualchoice_stop_model/src/code/2016-01-26-1300/matlab/job_optim_x.m
