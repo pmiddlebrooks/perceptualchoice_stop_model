@@ -17,19 +17,19 @@ dt="1";
 trialVar="trialvar";
 
 # Model architectures
-modelArch="crace_ili cli_ili cffi_ili";
+modelArch="cffi_ili cli_ili";
 
 # Model variants
-model="2 43 79 352 478";
+model="79";
 
 # Subject
-subject="2";
+subject="1";
 
 # SBATCH Settings
 #  for dt = 5:
-# WALLTIME="30:00:00"; 
+# WALLTIME="18:00:00"; 
 #  for dt = 1:
-WALLTIME="74:00:00";
+WALLTIME="36:00:00";
 PPN="4";
 MEM="12000";
 

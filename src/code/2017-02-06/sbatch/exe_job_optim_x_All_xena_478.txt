@@ -20,7 +20,7 @@ trialVar="trialvar";
 modelArch="crace_ili cli_ili cffi_ili";
 
 # Model variants
-model="2 43 79 352 478";
+model="478";
 
 # Subject
 subject="2";

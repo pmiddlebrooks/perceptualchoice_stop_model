@@ -17,10 +17,10 @@ dt="1";
 trialVar="trialvar";
 
 # Model architectures
-modelArch="crace_ili cli_ili cffi_ili";
+modelArch="cli_ili cffi_ili";
 
 # Model variants
-model="2 43 79 352 478";
+model="352";
 
 # Subject
 subject="2";
