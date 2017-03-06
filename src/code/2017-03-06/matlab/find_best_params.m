@@ -110,7 +110,7 @@ for iSubj = 1 : length(subj)
         end
         
         % Sort dataset by function value
-        allParams = sortrows(ds,'FunctionValue');
+        allParams = sortrows(ds,'FunctionValue')
         paramsBest{iSubj} = allParams.BestX{1};
         paramsInitial{iSubj} = allParams.StartX{1};
         paramNames = SAM.model.XCat.name;
