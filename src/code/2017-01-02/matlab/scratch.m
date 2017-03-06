@@ -481,3 +481,6 @@ for cnd = 1:3
        stopICErr2(cnd) = sum(data.cnd == cnd & data.resp ==1 & data.stm1 == 2 & data.ssd > 0)
        stopCorrect(cnd) = sum(data.cnd == cnd & data.ssd > 0 & data.acc == 1 & isnan(data.resp))
        end
+
+       %%  Check Xena's stop Rts
+ load('~/perceptualchoice_stop_model/data/2017-01-02/preproc01/subj01/data_subj01.mat')

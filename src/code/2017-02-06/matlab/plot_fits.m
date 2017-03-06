@@ -4,7 +4,7 @@ function plot_fits(subject,model,architecture,dt,trialVar,optimScope,fileStr,res
 % 1. PROCESS INPUTS & SPECIFY VARIABLES
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 close all
-nSim = 1000;
+nSim = 5000;
 % 1.1. Process inputs
 % =========================================================================
 
@@ -43,7 +43,8 @@ for iSubject = 1:nSubject
         
         %                 set_figure({1024,574,'pixels'},{'USLetter','landscape'},{'Helvetica',18});
         p = panel();
-        p.pack({.1 .25 .25 .25 .15}, num2cell(repmat(1/nModel,1,nModel)));
+        nPlotCol = max(3, nModel);
+        p.pack({.1 .25 .25 .25 .15}, num2cell(repmat(1/nPlotCol,1,nPlotCol)));
         
         annotation('textbox', [0 0.9 1 0.1], ...
             'String', sprintf('Subject %d, architecture %s',subject(iSubject),architecture{iArchitecture}), ...
