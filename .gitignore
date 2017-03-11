@@ -1,8 +1,13 @@
 # SAM structures of starting values (.mat), fitting logs (.mat), and fVal_BestX (.txt) files #
 ######################
-*startVal*2014*
-*startVal*2015*
-*startVal*2016*
+*startVal*
+finalLog*.mat
+*FVal_Best*.txt
+fVal*.txt
+userSpec*.txt
+*initParam*.mat
+SAM*.mat
+
 
 # Saved plots #
 ######################

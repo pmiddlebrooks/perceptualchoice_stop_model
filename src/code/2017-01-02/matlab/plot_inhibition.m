@@ -5,6 +5,7 @@ function plot_inhibition(subject,model,architecture,dt,trialVar,optimScope,fileS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 close all
 nSim = 50;
+ms2Std = 50;
 % 1.1. Process inputs
 % =========================================================================
 
@@ -82,7 +83,8 @@ switch subject
 end
 
 % Get model predictions and costs
-[cost,altCost,prd] = sam_cost(X,SAM);
+% [cost,altCost,prd] = sam_cost(X,SAM);
+prd = sam_sim_expt('explore',X,SAM);
 
 % Get rid of conditions for which ssd = 0 (an artifact of preporcessing)
 obs(prd.ssd == 0 ,:) = [];
@@ -94,7 +96,7 @@ prd(prd.ssd == 0 ,:) = [];
 %                     sam_plot(SAM,prd);
 
 % Plot it
-plotit(SAM,prd,p,model,modelStr,cost,altCost, responseSide, accuracy);
+plotit(SAM,prd,p,model,modelStr, responseSide, accuracy);
 
 if savePlot
     saveDir             = fullfile(sprintf(fileStr.result,subject,dt,trialVarStr,architecture));
@@ -121,7 +123,7 @@ clear SAM prd
 
 
 
-    function plotit(SAM,prd,p,model,modelStr,cost,altCost, responseSide, accuracy)
+    function plotit(SAM,prd,p,model,modelStr, responseSide, accuracy)
         
         % Specify colors and line properties
         mapShades           	= [.1 .25 .4 .6 .75 .9];
@@ -172,6 +174,13 @@ clear SAM prd
         stopICorrLnWidth        = 2;
         
         
+        % Get Model SSRT for whole session
+        stopCat = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd.*'), 'once')),prd.trialCat,'Uni',0)));
+        ssrtModel = mean(cell2mat(cellfun(@(x) reshape(x, [], 1), prd.rtStopICorr(stopCat), 'uni', false)));
+        
+        
+        cancelTime = nan(size(prd, 1), 1);
+        
         for iResponse = 1:length(responseArray)
             for iCondition = 1:length(conditionArray);
                 
@@ -188,35 +197,36 @@ clear SAM prd
                 end
                 iGoRT = [obs.rtGoCCorr{iTrialCatGo}; obs.rtGoCError{iTrialCatGo}];
                 
-                    iTrialCatStop = cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd.*c%d.*GO.*r%d',iCnd,iRsp), 'once')),prd.trialCat,'Uni',0));
+                iTrialCatStop = cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd.*c%d.*GO.*r%d',iCnd,iRsp), 'once')),prd.trialCat,'Uni',0));
                 iSsdArray = obs.ssd(iTrialCatStop);
                 iStopProbRespond = 1 - obs.pStopICorr(iTrialCatStop);
                 iNStop = obs.nStopICorr(iTrialCatStop) + obs.nStopIErrorCCorr(iTrialCatStop) + obs.nStopIErrorCError(iTrialCatStop);
                 
-
                 
-
+                
+                
                 % SSRT w.r.t. SSD
                 % ================================================
                 p(2,colorCohArray(iCohInd)).select();
                 p(2,colorCohArray(iCohInd)).hold('on');
-                p(2,colorCohArray(iCohInd)).title({sprintf('%d',round(cost))});
+                %                 p(2,colorCohArray(iCohInd)).title({sprintf('%d',round(cost))});
                 
                 
-                % Observed SSRT estimate                
-                        [fitParameters, lowestSSE] = Weibull(iSsdArray, iStopProbRespond, iNStop);
-            ssrt = get_ssrt(iSsdArray, iStopProbRespond, iNStop, iGoRT, fitParameters);
-
-                        plot(iSsdArray, ssrt.integration,'Color',iColor,'Marker',stopICorrMrkObs,'LineStyle',stopICorrLnObs,'LineWidth',stopICorrLnWidth)
+                % Observed SSRT estimate
+                [fitParameters, lowestSSE] = Weibull(iSsdArray, iStopProbRespond, iNStop);
+                ssrt = get_ssrt(iSsdArray, iStopProbRespond, iNStop, iGoRT, fitParameters);
+                
+                plot(iSsdArray, ssrt.integration,'Color',iColor,'Marker',stopICorrMrkObs,'LineStyle',stopICorrLnObs,'LineWidth',stopICorrLnWidth)
                 
                 % Predicted SSRTs
-                for kSSD = 1 : length(ssdArray)
+                meanSsrtPrd = nan(length(iSsdArray), 1);
+                for kSSD = 1 : length(iSsdArray)
                     
-                    kTrialCatStop = (prd.ssd == ssdArray(kSSD)) & iTrialCatStop;
+                    kTrialCatStop = (prd.ssd == iSsdArray(kSSD)) & iTrialCatStop;
                     if sum(kTrialCatStop)
                         % Model SSRTs
-                        
-                        plot(ssdArray(kSSD), mean(prd.rtStopICorr{kTrialCatStop}),'Color','k','Marker',stopICorrMrkPrd,'LineStyle',stopICorrLnPrd,'LineWidth',stopICorrLnWidth)
+                        meanSsrtPrd(kSSD) = mean(prd.rtStopICorr{kTrialCatStop});
+                        %                         plot(ssdArray(kSSD), mean(prd.rtStopICorr{kTrialCatStop}),'Color','k','Marker',stopICorrMrkPrd,'LineStyle',stopICorrLnPrd,'LineWidth',stopICorrLnWidth)
                         %                 rtStopICorrPrdL{iCnd}         = cell2mat(cellfun(@(x) reshape(x, [], 1), prd.rtStopICorr(iTrialCatStop), 'uni', false));
                         
                         
@@ -224,183 +234,305 @@ clear SAM prd
                     
                     
                 end
+                plot(iSsdArray, meanSsrtPrd,'Color','k','Marker',stopICorrMrkPrd,'LineStyle',stopICorrLnPrd,'LineWidth',stopICorrLnWidth)
                 
                 
                 
                 
+                
+                % Model Cancel Times
+                % ================================================
+                
+                
+                % Identify the relevent indices of parameters in X
+                xNames = SAM.model.variants.tree(model).XSpec.name.(optimScope).name;
+                [tF, zcIndGOCorr] = ismember(sprintf('zc_{GO}'),xNames);
+                [tF, t0Ind] = ismember(sprintf('t0_{GO}'),xNames);
+                [tF, zcIndSTOP] = ismember(sprintf('zc_{STOP}'),xNames);
+                [tF, z0IndSTOP] = ismember(sprintf('z0_{STOP}'),xNames);
+                
+                switch model
+                    case 79
+                        [tF, z0IndGOCorr] = ismember(sprintf('z0_{GO,r%i}', iRsp),xNames);
+                    case 352
+                        [tF, z0IndGOCorr] = ismember(sprintf('z0_{GO}'),xNames);
+                        z0IndGOError = z0IndGOCorr;
+                    case 478
+                        [tF, z0IndGOCorr] = ismember(sprintf('z0_{GO,r%i}', iRsp),xNames);
+                    otherwise
+                        error(fprintf('Don''t have code yet for model %i\n', model));
+                end
+                
+                % Get Baseline activity (i.e. standard devation to calculate cancel
+                % time
+                
+                % Get latency-matched GO trials to compare with canceled STOP
+                % trials
+                [tF, zcIndGOCorr] = ismember(sprintf('zc_{GO}'),xNames);
+                goInd = cellfun(@(in1) find(in1 > X(zcIndGOCorr), 1), prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sY, 'uni', false);
+                goRT = cellfun(@(in1, in2) in1(in2), prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sX, goInd);
+                % Predicted Cancel Times
+                for kSSD = 1 : length(ssdArray)
+                    kTrialCatStop = (prd.ssd == iSsdArray(kSSD)) & iTrialCatStop;
+                    
+                    % Slow Go RTs
+                    kGoSlowRTInd = goRT >  prd.ssd(kTrialCatStop) + ssrtModel;
+                    kGoSlowAct = mean(cell2mat(prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sY(kGoSlowRTInd)))';
+                    % Set values (NaNs) beyond RT to the threshold, to
+                    % emulate ongoing spiking activity
+%                     kGoSlowAct(isnan(kGoSlowAct)) = X(zcIndGOCorr);
+                    kGoSlowAct(isnan(kGoSlowAct)) = max(kGoSlowAct);
+                    kGoStopAct = mean(cell2mat(prd.dyn{kTrialCatStop}.stopICorr.goStim.targetGO.sY))';
+                    
+                    kActDiff = kGoSlowAct - kGoStopAct;
+                    kStd = std(kActDiff(1:prd.ssd(kTrialCatStop)));
+                    
+                    kStd2Ind = kActDiff > 2*kStd;
+                    
+                    
+                    
+                    % Look for a sequence of ms2Std ms for which the go sdf is 2
+                    % std greater than the stop sdf.
+                    % First whether the differential sdf was > 2*Std for the
+                    % first ms2Std ms
+                    if sum(kStd2Ind(1:ms2Std)) == ms2Std
+                        cancelTime(kTrialCatStop) = 1;
+                    else
+                        % If it wasn't, determein whether there was a time
+                        % after the checkerboard onset that the differential
+                        % sdf was > 2*Std for at least ms2Std ms.
+                        riseAbove2Std = find([0; diff(kStd2Ind)] == 1);
+                        sinkBelow2Std = find([0; diff(kStd2Ind)] == -1);
+                        if ~isempty(riseAbove2Std)
+                            % Get rid of occasions for which the signals differ
+                            % going into the epoch (and therefore they will
+                            % cease to differ before they begin again to
+                            % differ)
+                            if ~isempty(sinkBelow2Std)
+                                sinkBelow2Std(sinkBelow2Std < riseAbove2Std(1)) = [];
+                            end
+                            
+                            % If there's one more riseAbove2Std than sinkBelow2Std, the last riseAbove2Std
+                            % will last until the end of the sdf: Add to
+                            % singkBelowStd the end of the epoch
+                            if length(riseAbove2Std) > length(sinkBelow2Std)
+                                sinkBelow2Std = [sinkBelow2Std; length(kActDiff)];
+                            end
+                            
+                            % Now riseAbove2Std length should be equal. See if
+                            % any of the riseAbove2Std streaks go longer than
+                            % 50ms
+                            ind = find(sinkBelow2Std - riseAbove2Std >= ms2Std, 1);
+                            if ~isempty(ind)
+                                cancelTime(kTrialCatStop) = riseAbove2Std(ind);
+                            end
+                            % If they're not equal, the last riseAbove2Std
+                            % will last until the end of the sdf: Add to
+                            % singkBelowStd the end of the epoch
+                        end
+                    end
+                    
+                    
+                    % If there werwe ms2Std consecutive ms of sdfDiff > 2*Std,
+                    % check whether the difference ever reached 6*Std
+                    if ~isnan(cancelTime(kTrialCatStop))
+                        
+                        
+                        % If it never reached 6Std, reset cancel time with NaN again
+                        std6Ind = kActDiff(cancelTime(kTrialCatStop) : end) > 6*kStd;
+                        if ~sum(std6Ind)
+                            cancelTime(kTrialCatStop) = nan;
+                        end
+                    end
+                    
+                    
+                    
+                    
+                    
+                end
             end
         end
-                
-                
-                
-                % GoCCorr trials
-                % -----------------------------------------------------------------
-                if strcmp(accuracy, 'both') || strcmp(accuracy, 'correct')
-                    rtGoCCorrObs     = obs.rtQGoCCorr{iTrialCatGo};
-                    cumPGoCCorrObs   = obs.cumProbGoCCorr{iTrialCatGo};
-                    
-                    rtGoCCorrPrd     = prd.rtGoCCorr{iTrialCatGo};
-                    cumPGoCCorrPrd   = cmtb_edf(prd.rtGoCCorr{iTrialCatGo}(:),prd.rtGoCCorr{iTrialCatGo}(:));
-                    
-                    
-                    % Plot it
-                    plot(rtGoCCorrObs,cumPGoCCorrObs,'Color',iColor,'Marker',goCCorrMrkObs,'LineStyle',goCCorrLnObs,'LineWidth',goCCorrLnWidth);
-                    plot(rtGoCCorrPrd,cumPGoCCorrPrd,'Color',iColor,'Marker',goCCorrMrkPrd,'LineStyle',goCCorrLnPrd,'LineWidth',goCCorrLnWidth);
-                    
-                end
-                
-                % GoCError trials
-                % -----------------------------------------------------------------
-                if ~isempty(obs.rtQGoCError{iTrialCatGo}) && obs.nGoCError(iTrialCatGo) > 10 && (strcmp(accuracy, 'both') || strcmp(accuracy, 'error'))
-                    
-                    rtGoCErrorObs     = obs.rtQGoCError{iTrialCatGo};
-                    cumPGoCErrorObs   = obs.cumProbGoCError{iTrialCatGo};
-                    
-                    rtGoCErrorPrd     = prd.rtGoCError{iTrialCatGo};
-                    cumPGoCErrorPrd   = cmtb_edf(prd.rtGoCError{iTrialCatGo}(:),prd.rtGoCError{iTrialCatGo}(:));
-                    
-                    
-                    % Plot it
-                    iColor = cndClr(iCohInd, :);
-                    plot(rtGoCErrorObs,cumPGoCErrorObs,'Color',iColor,'Marker',goCErrorMrkObs,'LineStyle',goCErrorLnObs,'LineWidth',goCErrorLnWidth);
-                    plot(rtGoCErrorPrd,cumPGoCErrorPrd,'Color',iColor,'Marker',goCErrorMrkPrd,'LineStyle',goCErrorLnPrd,'LineWidth',goCErrorLnWidth);
-                    
-                end
-                
-                % Set axes
-                switch subject
-                    case 1
-                        set(gca,'XLim',[200 700], ...
-                            'XTick',100:100:700, ...
-                            'YLim',[0 1], ...
-                            'YTick',0:0.2:1)
-                    case 2
-                        set(gca,'XLim',[200 500], ...
-                            'XTick',100:100:600, ...
-                            'YLim',[0 1], ...
-                            'YTick',0:0.2:1)
-                    otherwise
-                        error('Need to add axes limits for subject')
-                end
-                
-                
-                
-                % RT distribution Stop trials
-                %         ================================================
-                p(3,colorCohArray(iCohInd)).select();
-                p(3,colorCohArray(iCohInd)).hold('on');
-                
-                % Get rid of NaNs in obs.cumProbStopIErrorCCorr
-                for j = 1 : size(obs, 1)
-                    if isnan(obs.cumProbStopIErrorCCorr{j})
-                        obs.cumProbStopIErrorCCorr{j} = [];
-                    end
-                end
-                
-                iRsp = responseArray(iResponse);
-                iCnd = conditionArray(iCondition);
-                
-                % Identify the relevant rows in the dataset array
-                iTrialCatStop = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd%d.*GO.*r%d.*c%d',iSsd,iRsp,iCnd), 'once')),prd.trialCat,'Uni',0)));
-                
-                if isempty(iTrialCatStop)
-                    iTrialCatStop = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd%d.*c%d.*r%d.*',iSsd,iCnd,iRsp), 'once')),prd.trialCat,'Uni',0)));
-                end
-                
-                % StopIErrorCCorr trials
-                % -----------------------------------------------------------------
-                rtStopIErrorCCorrObs   = obs.rtQStopIErrorCCorr{iTrialCatStop};
-                cumPStopIErrorCCorrObs = obs.cumProbStopIErrorCCorr{iTrialCatStop};
-                
-                rtStopIErrorCCorrPrd     = prd.rtStopIErrorCCorr{iTrialCatStop};
-                cumPStopIErrorCCorrPrd   = cmtb_edf(prd.rtStopIErrorCCorr{iTrialCatStop}(:),prd.rtStopIErrorCCorr{iTrialCatStop}(:));
-                
-                
-                % Plot it
-                iColor = cndClr(iCohInd, :);
-                plot(rtStopIErrorCCorrObs,cumPStopIErrorCCorrObs,'Color',iColor,'Marker',stopIErrorCCorrMrkObs,'LineStyle',stopIErrorCCorrLnObs,'LineWidth',stopIErrorCCorrLnWidth);
-                plot(rtStopIErrorCCorrPrd,cumPStopIErrorCCorrPrd,'Color',iColor,'Marker',stopIErrorCCorrMrkPrd,'LineStyle',stopIErrorCCorrLnPrd,'LineWidth',stopIErrorCCorrLnWidth);
-                
-                % StopICorr trials
-                % -----------------------------------------------------------------
-                rtStopICorrPrd     = prd.rtStopICorr{iTrialCatStop};
-                cumPStopICorrPrd   = cmtb_edf(prd.rtStopICorr{iTrialCatStop}(:),prd.rtStopICorr{iTrialCatStop}(:));
-                
-                % Plot it
-                iColor = 'r';%cndClr((length(conditionArray) * (iRsp -1) + iCondition), :);
-                plot(rtStopICorrPrd,cumPStopICorrPrd,'Color',iColor,'Marker',stopICorrMrkPrd,'LineStyle',stopICorrLnPrd,'LineWidth',stopICorrLnWidth);
-                
-                
-                % Set axes
-                switch subject
-                    case 1
-                        set(gca,'XLim',[200 700], ...
-                            'XTick',100:100:700, ...
-                            'YLim',[0 1], ...
-                            'YTick',0:0.2:1)
-                    case 2
-                        set(gca,'XLim',[200 500], ...
-                            'XTick',100:100:600, ...
-                            'YLim',[0 1], ...
-                            'YTick',0:0.2:1)
-                    otherwise
-                        error('Need to add axes limits for subject')
-                end
-                
-                
-                
-                % Inhibition function
-                % ================================================
-                p(4,colorCohArray(iCohInd)).select();
-                p(4,colorCohArray(iCohInd)).hold('on');
-                %     p(2,colorCohArray(iCohInd)).title({sprintf('Model %d',model(colorCohArray(iCohInd))), ...
-                %                        modelStr{colorCohArray(iCohInd)}, ...
-                %                        sprintf('\\chi^2 = %.1f',cost), ...
-                %                        sprintf('BIC = %.1f',altCost)});
-                
-                
-                iRsp = responseArray(iResponse);
-                iCnd = conditionArray(iCondition);
-                
-                % Identify the relevant rows in the dataset array
-                %                     iTrialCatStop = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd%d.*GO.*r%d.*c%d',iSsd,iRsp,iCnd), 'once')),prd.trialCat,'Uni',0)));
-                %
-                %                     if isempty(iTrialCatStop)
-                %                         iTrialCatStop = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd%d.*c%d.*r%d.*',iSsd,iCnd,iRsp), 'once')),prd.trialCat,'Uni',0)));
-                %                     end
-                %                     iTrialCat = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*GO:c%d',iCnd), 'once')),prd.trialCat,'Uni',0)));
-                iTrialCatStop = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*GO.*r%d.*c%d',iRsp,iCnd), 'once')),prd.trialCat,'Uni',0)));
-                if isempty(iTrialCatStop)
-                    iTrialCatStop = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*c%d.*GO.*r%d',iCnd,iRsp), 'once')),prd.trialCat,'Uni',0)));
-                end
-                % Get the SSDs and observed and predicted response rates
-                ssd = obs.ssd(iTrialCatStop);
-                respRateObs = 1-obs.pStopICorr(iTrialCatStop);
-                respRatePrd = 1-prd.pStopICorr(iTrialCatStop);
-                
-                % Plot them
-                iColor = cndClr(iCohInd, :);
-                plot(ssd,respRateObs,'Color',iColor,'Marker',stopIErrorCCorrMrkObs,'LineStyle',stopIErrorCCorrLnObs);
-                plot(ssd,respRatePrd,'Color',iColor,'Marker',stopIErrorCCorrMrkPrd,'LineStyle',stopIErrorCCorrLnPrd);
-                
-                
-                % Set axes
-                %             switch subject
-                %                 case 1
-                set(gca,'XLim',[0 750], ...
-                    'XTick',0:150:750, ...
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        % GoCCorr trials
+        % -----------------------------------------------------------------
+        if strcmp(accuracy, 'both') || strcmp(accuracy, 'correct')
+            rtGoCCorrObs     = obs.rtQGoCCorr{iTrialCatGo};
+            cumPGoCCorrObs   = obs.cumProbGoCCorr{iTrialCatGo};
+            
+            rtGoCCorrPrd     = prd.rtGoCCorr{iTrialCatGo};
+            cumPGoCCorrPrd   = cmtb_edf(prd.rtGoCCorr{iTrialCatGo}(:),prd.rtGoCCorr{iTrialCatGo}(:));
+            
+            
+            % Plot it
+            plot(rtGoCCorrObs,cumPGoCCorrObs,'Color',iColor,'Marker',goCCorrMrkObs,'LineStyle',goCCorrLnObs,'LineWidth',goCCorrLnWidth);
+            plot(rtGoCCorrPrd,cumPGoCCorrPrd,'Color',iColor,'Marker',goCCorrMrkPrd,'LineStyle',goCCorrLnPrd,'LineWidth',goCCorrLnWidth);
+            
+        end
+        
+        % GoCError trials
+        % -----------------------------------------------------------------
+        if ~isempty(obs.rtQGoCError{iTrialCatGo}) && obs.nGoCError(iTrialCatGo) > 10 && (strcmp(accuracy, 'both') || strcmp(accuracy, 'error'))
+            
+            rtGoCErrorObs     = obs.rtQGoCError{iTrialCatGo};
+            cumPGoCErrorObs   = obs.cumProbGoCError{iTrialCatGo};
+            
+            rtGoCErrorPrd     = prd.rtGoCError{iTrialCatGo};
+            cumPGoCErrorPrd   = cmtb_edf(prd.rtGoCError{iTrialCatGo}(:),prd.rtGoCError{iTrialCatGo}(:));
+            
+            
+            % Plot it
+            iColor = cndClr(iCohInd, :);
+            plot(rtGoCErrorObs,cumPGoCErrorObs,'Color',iColor,'Marker',goCErrorMrkObs,'LineStyle',goCErrorLnObs,'LineWidth',goCErrorLnWidth);
+            plot(rtGoCErrorPrd,cumPGoCErrorPrd,'Color',iColor,'Marker',goCErrorMrkPrd,'LineStyle',goCErrorLnPrd,'LineWidth',goCErrorLnWidth);
+            
+        end
+        
+        % Set axes
+        switch subject
+            case 1
+                set(gca,'XLim',[200 700], ...
+                    'XTick',100:100:700, ...
                     'YLim',[0 1], ...
                     'YTick',0:0.2:1)
-                %                 case 2
-                %             set(gca,'XLim',[200 500], ...
-                %                 'XTick',100:100:600, ...
-                %                 'YLim',[0 1], ...
-                %                 'YTick',0:0.2:1)
-                %                 otherwise
-                %                     error('Need to add axes limits for subject')
-                %             end
-%             end
-%         end
+            case 2
+                set(gca,'XLim',[200 500], ...
+                    'XTick',100:100:600, ...
+                    'YLim',[0 1], ...
+                    'YTick',0:0.2:1)
+            otherwise
+                error('Need to add axes limits for subject')
+        end
+        
+        
+        
+        % RT distribution Stop trials
+        %         ================================================
+        p(3,colorCohArray(iCohInd)).select();
+        p(3,colorCohArray(iCohInd)).hold('on');
+        
+        % Get rid of NaNs in obs.cumProbStopIErrorCCorr
+        for j = 1 : size(obs, 1)
+            if isnan(obs.cumProbStopIErrorCCorr{j})
+                obs.cumProbStopIErrorCCorr{j} = [];
+            end
+        end
+        
+        iRsp = responseArray(iResponse);
+        iCnd = conditionArray(iCondition);
+        
+        % Identify the relevant rows in the dataset array
+        iTrialCatStop = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd%d.*GO.*r%d.*c%d',iSsd,iRsp,iCnd), 'once')),prd.trialCat,'Uni',0)));
+        
+        if isempty(iTrialCatStop)
+            iTrialCatStop = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd%d.*c%d.*r%d.*',iSsd,iCnd,iRsp), 'once')),prd.trialCat,'Uni',0)));
+        end
+        
+        % StopIErrorCCorr trials
+        % -----------------------------------------------------------------
+        rtStopIErrorCCorrObs   = obs.rtQStopIErrorCCorr{iTrialCatStop};
+        cumPStopIErrorCCorrObs = obs.cumProbStopIErrorCCorr{iTrialCatStop};
+        
+        rtStopIErrorCCorrPrd     = prd.rtStopIErrorCCorr{iTrialCatStop};
+        cumPStopIErrorCCorrPrd   = cmtb_edf(prd.rtStopIErrorCCorr{iTrialCatStop}(:),prd.rtStopIErrorCCorr{iTrialCatStop}(:));
+        
+        
+        % Plot it
+        iColor = cndClr(iCohInd, :);
+        plot(rtStopIErrorCCorrObs,cumPStopIErrorCCorrObs,'Color',iColor,'Marker',stopIErrorCCorrMrkObs,'LineStyle',stopIErrorCCorrLnObs,'LineWidth',stopIErrorCCorrLnWidth);
+        plot(rtStopIErrorCCorrPrd,cumPStopIErrorCCorrPrd,'Color',iColor,'Marker',stopIErrorCCorrMrkPrd,'LineStyle',stopIErrorCCorrLnPrd,'LineWidth',stopIErrorCCorrLnWidth);
+        
+        % StopICorr trials
+        % -----------------------------------------------------------------
+        rtStopICorrPrd     = prd.rtStopICorr{iTrialCatStop};
+        cumPStopICorrPrd   = cmtb_edf(prd.rtStopICorr{iTrialCatStop}(:),prd.rtStopICorr{iTrialCatStop}(:));
+        
+        % Plot it
+        iColor = 'r';%cndClr((length(conditionArray) * (iRsp -1) + iCondition), :);
+        plot(rtStopICorrPrd,cumPStopICorrPrd,'Color',iColor,'Marker',stopICorrMrkPrd,'LineStyle',stopICorrLnPrd,'LineWidth',stopICorrLnWidth);
+        
+        
+        % Set axes
+        switch subject
+            case 1
+                set(gca,'XLim',[200 700], ...
+                    'XTick',100:100:700, ...
+                    'YLim',[0 1], ...
+                    'YTick',0:0.2:1)
+            case 2
+                set(gca,'XLim',[200 500], ...
+                    'XTick',100:100:600, ...
+                    'YLim',[0 1], ...
+                    'YTick',0:0.2:1)
+            otherwise
+                error('Need to add axes limits for subject')
+        end
+        
+        
+        
+        % Inhibition function
+        % ================================================
+        p(4,colorCohArray(iCohInd)).select();
+        p(4,colorCohArray(iCohInd)).hold('on');
+        %     p(2,colorCohArray(iCohInd)).title({sprintf('Model %d',model(colorCohArray(iCohInd))), ...
+        %                        modelStr{colorCohArray(iCohInd)}, ...
+        %                        sprintf('\\chi^2 = %.1f',cost), ...
+        %                        sprintf('BIC = %.1f',altCost)});
+        
+        
+        iRsp = responseArray(iResponse);
+        iCnd = conditionArray(iCondition);
+        
+        % Identify the relevant rows in the dataset array
+        %                     iTrialCatStop = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd%d.*GO.*r%d.*c%d',iSsd,iRsp,iCnd), 'once')),prd.trialCat,'Uni',0)));
+        %
+        %                     if isempty(iTrialCatStop)
+        %                         iTrialCatStop = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd%d.*c%d.*r%d.*',iSsd,iCnd,iRsp), 'once')),prd.trialCat,'Uni',0)));
+        %                     end
+        %                     iTrialCat = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*GO:c%d',iCnd), 'once')),prd.trialCat,'Uni',0)));
+        iTrialCatStop = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*GO.*r%d.*c%d',iRsp,iCnd), 'once')),prd.trialCat,'Uni',0)));
+        if isempty(iTrialCatStop)
+            iTrialCatStop = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*c%d.*GO.*r%d',iCnd,iRsp), 'once')),prd.trialCat,'Uni',0)));
+        end
+        % Get the SSDs and observed and predicted response rates
+        ssd = obs.ssd(iTrialCatStop);
+        respRateObs = 1-obs.pStopICorr(iTrialCatStop);
+        respRatePrd = 1-prd.pStopICorr(iTrialCatStop);
+        
+        % Plot them
+        iColor = cndClr(iCohInd, :);
+        plot(ssd,respRateObs,'Color',iColor,'Marker',stopIErrorCCorrMrkObs,'LineStyle',stopIErrorCCorrLnObs);
+        plot(ssd,respRatePrd,'Color',iColor,'Marker',stopIErrorCCorrMrkPrd,'LineStyle',stopIErrorCCorrLnPrd);
+        
+        
+        % Set axes
+        %             switch subject
+        %                 case 1
+        set(gca,'XLim',[0 750], ...
+            'XTick',0:150:750, ...
+            'YLim',[0 1], ...
+            'YTick',0:0.2:1)
+        %                 case 2
+        %             set(gca,'XLim',[200 500], ...
+        %                 'XTick',100:100:600, ...
+        %                 'YLim',[0 1], ...
+        %                 'YTick',0:0.2:1)
+        %                 otherwise
+        %                     error('Need to add axes limits for subject')
+        %             end
+        %             end
+        %         end
         
     end
 

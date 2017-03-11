@@ -5,12 +5,13 @@ function plot_simulation(subject,model,architecture,dt,trialVar,fileStr, savePlo
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % 1.0 hard-code which conditions and responses to plot for now
+nSim = 100;
+
 close all
 conditionArray       = 2;
 responseArray   = 1;
 accuracy        = 'both';
 responseSide    = 'right';
-nSim = 50;
 % 1.1. Process inputs
 % =========================================================================
 

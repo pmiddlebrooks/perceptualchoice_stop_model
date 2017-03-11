@@ -494,12 +494,6 @@ mean(stdGo(round(X(t0Ind)) : round(X(t0Ind)+50)))
 goInd = cellfun(@(in1) find(in1 > X(zcIndGOCorr), 1), prd.dyn{3}.goCCorr.goStim.targetGO.sY, 'uni', false);
 goRT = cellfun(@(in1, in2) in1(in2), prd.dyn{3}.goCCorr.goStim.targetGO.sX, goInd);
 
-%%
-figure()
-plot(kGoSlowAct)
-hold on
-plot(kGoStopAct)
-
 
 
 
