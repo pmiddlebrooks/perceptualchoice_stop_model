@@ -182,7 +182,7 @@ for iSubject = 1:nSubject
                 % -----------------------------------------------------------------
                 if strcmp(accuracy, 'both')
                     
-                    % plot  unit dynamics
+                    % plot Average unit dynamics
                     dynTimeGoError = prd.dyn{iTrialCatGo}.stopICorr.goStim.nonTargetGO.sX;
                     dynActGoError = prd.dyn{iTrialCatGo}.stopICorr.goStim.nonTargetGO.sY;
                     cellfun(@(x,y) plot(x,y, 'Color',unitLnSingleClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',1), dynTimeGoError,dynActGoError, 'uni', false)
@@ -195,7 +195,7 @@ for iSubject = 1:nSubject
                 % -----------------------------------------------------------------
                 if strcmp(accuracy, 'both') || strcmp(accuracy, 'correct')
                     
-                    % plot  unit dynamics
+                    % plot Average unit dynamics
                     dynTimeGoCorr = prd.dyn{iTrialCatGo}.stopICorr.goStim.targetGO.sX;
                     dynActGoCorr = prd.dyn{iTrialCatGo}.stopICorr.goStim.targetGO.sY;
                     cellfun(@(x,y) plot(x,y, 'Color',unitLnSingleClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',1), dynTimeGoCorr,dynActGoCorr, 'uni', false)
@@ -207,7 +207,7 @@ for iSubject = 1:nSubject
                 % Stop unit
                 % -----------------------------------------------------------------
                 
-                    % plot  unit dynamics
+                    % plot Average unit dynamics
                     dynTimeStop = prd.dyn{iTrialCatGo}.stopICorr.goStim.targetSTOP.sX;
                     dynActStop = prd.dyn{iTrialCatGo}.stopICorr.goStim.targetSTOP.sY;
                     cellfun(@(x,y) plot(x(iSsd+1:end),y(iSsd+1:end), 'Color',unitLnSingleClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',1), dynTimeStop,dynActStop, 'uni', false)

@@ -21,7 +21,7 @@ choiceMech  = 'race'; %{'race', 'li', 'ffi'};
 stopMech    = 'li';
 model       = 191;%[79 191 245 478];
 
-fileStr.root   = fullfile(modelRoot,'data/2017-01-02/preproc01/subj%.2d/dt%d/%s/%s/');
+fileStr.root   = fullfile(modelRoot,'data/2017-03-06/preproc01/subj%.2d/dt%d/%s/%s/');
 fileStr.output = 'allFValAndBestX_%sTrials_model%.3d.txt';
 % ===============================================================================================
 
@@ -120,12 +120,12 @@ trialVar                = true;
 simScope                = 'go';
 choiceMech              = 'race';
 stopMech                = 'none';
-fileStr.root            = strcat(modelRoot,'/data/2017-01-02/preproc01/subj%.2d/dt5/%s/%s/');
+fileStr.root            = strcat(modelRoot,'/data/2017-03-06/preproc01/subj%.2d/dt5/%s/%s/');
 doPlot                  = true;
 doSave                  = true;
 doStartParCluster       = false;
 
-cd(fullfile(modelRoot,'src/code/2017-01-02/matlab'));
+cd(fullfile(modelRoot,'src/code/2017-03-06/matlab'));
 
 % Load the general SAM file
 % =========================================================================
@@ -430,7 +430,7 @@ plot_fits(subject,model,architecture,dt,trialVar,simScope,fileStr,respSide,accur
 end
 
 %%  Check Xena's stop Rts
- load('~/perceptualchoice_stop_model/data/2017-01-02/preproc01/subj02/data_subj02.mat')
+ load('~/perceptualchoice_stop_model/data/2017-03-06/preproc01/subj02/data_subj02.mat')
 
  for cnd = 1:3
         
@@ -481,20 +481,3 @@ for cnd = 1:3
        stopICErr2(cnd) = sum(data.cnd == cnd & data.resp ==1 & data.stm1 == 2 & data.ssd > 0)
        stopCorrect(cnd) = sum(data.cnd == cnd & data.ssd > 0 & data.acc == 1 & isnan(data.resp))
        end
-
-       %%  Check Xena's stop Rts
- load('~/perceptualchoice_stop_model/data/2017-01-02/preproc01/subj01/data_subj01.mat')
-
-%%
-mGo = mean(cell2mat(prd.dyn{3}.goCCorr.goStim.targetGO.sY), 1);
-stdGo = std(cell2mat(prd.dyn{3}.goCCorr.goStim.targetGO.sY), 1);
-mean(stdGo(round(X(t0Ind)) : round(X(t0Ind)+50)))
-%%
-[tF, zcIndGOCorr] = ismember(sprintf('zc_{GO}'),xNames)
-goInd = cellfun(@(in1) find(in1 > X(zcIndGOCorr), 1), prd.dyn{3}.goCCorr.goStim.targetGO.sY, 'uni', false);
-goRT = cellfun(@(in1, in2) in1(in2), prd.dyn{3}.goCCorr.goStim.targetGO.sX, goInd);
-
-
-
-
-
