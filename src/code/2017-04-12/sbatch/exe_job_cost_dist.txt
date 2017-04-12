@@ -6,8 +6,8 @@
 # N.B. Make sure that you update path strings and SBATCH .txt-file below
 
 pathStr="/scratch/middlepg/perceptualchoice_stop_model/data/2017-03-06/preproc01/subj%.2d/dt%d/%s/%s/SAM_%sTrials.mat";
-rootDir "/scratch/middlepg/perceptualchoice_stop_model/data/2017-03-06/preproc01/subj%.2d/dt%d/%s/%s/";
-saveDir "/scratch/middlepg/perceptualchoice_stop_model/data/2017-04-12/preproc01/subj%.2d/dt%d/%s/%s/";
+rootDir="/scratch/middlepg/perceptualchoice_stop_model/data/2017-03-06/preproc01/subj%.2d/dt%d/%s/%s/";
+saveDir="/scratch/middlepg/perceptualchoice_stop_model/data/2017-04-12/preproc01/subj%.2d/dt%d/%s/%s/";
 # pathStrInitParam="/scratch/middlepg/perceptualchoice_stop_model/data/2017-03-06/preproc01/subj%.2d/dt%d/%s/%s/SAM_initParam_%sTrials_model%.3d.mat";
 
 # Optimization scope
