@@ -7,7 +7,7 @@ close all
 
 % 1.1. Process inputs
 % =========================================================================
-nSim = 3000;
+nSim = 5000;
 
 if trialVar
     trialVarStr = 'trialvar';
