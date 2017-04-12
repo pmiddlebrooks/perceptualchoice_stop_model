@@ -45,13 +45,22 @@ switch environ
         
         % Get model index
         iModel                = str2double(getenv('iModel'));
-    otherwise
+
+        % Get starting point index which iteration is this?
+        iStartVal 			= str2double(getenv('iStartVal'));
+otherwise
         % otherwise those variables are set by the script
         % exe_job_optim_x0.m
 end
 
 % Get path string
 pathStr               = getenv('pathStr');
+
+% Get root directory
+rootDir               = getenv('rootDir');
+
+% Get save directory
+saveDir               = getenv('saveDir');
 
 % Get path string for initial parameters
 % pathStrInitParam      = getenv('pathStrInitParam');
@@ -122,8 +131,8 @@ SAM.optim.nStartPoint = nModleSimulations;
 
 % 2.4. Add details for logging
 % =========================================================================
-fNameIterLog          = sprintf('iterLog_cost_%sTrials_model%.3d_started%s.mat',optimScope,iModel,timeStr);
-fNameFinalLog         = sprintf('finalLog_cost_%sTrials_model%.3d_started%s.mat',optimScope,iModel,timeStr);
+fNameIterLog          = sprintf('iterLog_cost_%sTrials_model%.3d_startSet%.3d_started%s.mat',optimScope,iModel,iStartVal,timeStr);
+fNameFinalLog         = sprintf('finalLog_cost_%sTrials_model%.3d_startSet%.3d_started%s.mat',optimScope,iModel,iStartVal,timeStr);
 
 % Iteration log file
 fitLog.iterLogFile    = fullfile(sprintf(saveDir,iSubj,dt,trialVar,iModelArch),fNameIterLog);
@@ -158,26 +167,26 @@ history = nan(nModleSimulations + 1,numel(SAM.optim.x0Base) + 2);
 
 % In unique directory to prevent collision of parallel jobs
 % e.g. see: http://www.mathworks.com/matlabcentral/answers/97141-why-am-i-unable-to-start-a-local-matlabpool-from-multiple-matlab-sessions-that-use-a-shared-preferen
-c = parcluster();
-if isfield(SAM,'compCluster')
-    c.NumWorkers = SAM.compCluster.nProcessors;
-end
-[~,homeDir] = system('echo $HOME');
-homeDir = strtrim(homeDir);
-release = version('-release');
-tempDir = fullfile(homeDir,'.matlab','local_cluster_jobs',release);
-if exist(tempDir) ~= 7
-    mkdir(tempDir)
-end
-t = tempname(tempDir);
-mkdir(t);
-c.JobStorageLocation=t;
-tWait = 1+60*rand();
-pause(tWait);
-myPool = parpool(c);
+% c = parcluster();
+% if isfield(SAM,'compCluster')
+%     c.NumWorkers = SAM.compCluster.nProcessors;
+% end
+% [~,homeDir] = system('echo $HOME');
+% homeDir = strtrim(homeDir);
+% release = version('-release');
+% tempDir = fullfile(homeDir,'.matlab','local_cluster_jobs',release);
+% if exist(tempDir) ~= 7
+%     mkdir(tempDir)
+% end
+% t = tempname(tempDir);
+% mkdir(t);
+% c.JobStorageLocation=t;
+% tWait = 1+60*rand();
+% pause(tWait);
+% myPool = parpool(c);
 
 for iter = 1:nModleSimulations
-    
+    tic
     disp(sprintf('This is iter %.3d',iter))
     
     % Re-seed the random number generatory each time:
@@ -191,9 +200,13 @@ for iter = 1:nModleSimulations
     if iterLogFreq*round(double(iter)/iterLogFreq) == iter;
         save(iterLogFile,'history');
     end
+    toc
 end
 
 % Save the final log file
+    if exist(sprintf(saveDir,iSubj,dt,trialVar,iModelArch),'dir') ~= 7
+        mkdir(sprintf(saveDir,iSubj,dt,trialVar,iModelArch))
+    end
 save(finalLogFile,'history');
 
 % Remove iteration log file

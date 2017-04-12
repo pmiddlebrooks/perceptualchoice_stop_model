@@ -45,7 +45,10 @@ do
 	do
 		for iSubj in `echo $subject`
 		do
-			sbatch --time=`echo $WALLTIME` --nodes=1 --mem=`echo $MEM` --cpus-per-task=8 --export=pathStr=`echo "$pathStr"`,rootDir=`echo "$rootDir"`,saveDir=`echo "$saveDir"`,optimScope=`echo "$optimScope"`,dt=`echo "$dt"`,trialVar=`echo "$trialVar"`,modelArch=`echo "$iModelArch"`,iModel=`echo "$iModel"`,nModelSim=`echo "$nModelSim"`,subject=`echo "$iSubj"`,processorsPerNode=`echo "$PPN"`, /scratch/middlepg/perceptualchoice_stop_model/src/code/2017-04-12/sbatch/sbatch_job_cost_dist.txt
+			for iStartVal in {1..2}
+			do
+			sbatch --time=`echo $WALLTIME` --nodes=1 --mem=`echo $MEM` --cpus-per-task=8 --export=pathStr=`echo "$pathStr"`,rootDir=`echo "$rootDir"`,saveDir=`echo "$saveDir"`,optimScope=`echo "$optimScope"`,dt=`echo "$dt"`,trialVar=`echo "$trialVar"`,modelArch=`echo "$iModelArch"`,iModel=`echo "$iModel"`,nModelSim=`echo "$nModelSim"`,iStartVal=`echo "$iStartVal"`,subject=`echo "$iSubj"`,processorsPerNode=`echo "$PPN"`, /scratch/middlepg/perceptualchoice_stop_model/src/code/2017-04-12/sbatch/sbatch_job_cost_dist.txt
+			done
 		done    
 	done
 done

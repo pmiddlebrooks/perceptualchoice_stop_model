@@ -27,6 +27,7 @@ else
     environ = 'local';
 end
 
+
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1. PROCESS INPUTS, DEFINE VARIABLES, ADD ACCESS TO PATHS
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -51,6 +52,12 @@ end
 
 % Get path string
 pathStr               = getenv('pathStr');
+
+% Get root directory
+rootDir               = getenv('rootDir');
+
+% Get save directory
+saveDir               = getenv('saveDir');
 
 % Get path string for initial parameters
 % pathStrInitParam      = getenv('pathStrInitParam');
@@ -99,25 +106,23 @@ addpath(genpath(fullfile(matRoot,'cmtb')));
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % 2.1. Load the SAM file and Get best fitting paramters for this model
-fileStr.root            = strcat(modelRoot,'/data/2017-03-06/preproc01/subj%.2d/dt%d/%s/%s/');
-rootDir             = fileStr.root;
 nameFVal            = 'allFValAndBestX_%sTrials_model%.3d.txt';
-            ds = dataset('File',fullfile(sprintf(rootDir,iSubj,dt,trialVar,iModelArch),sprintf(nameFVal,optimScope,iModel)));
+ds = dataset('File',fullfile(sprintf(rootDir,iSubj,dt,trialVar,iModelArch),sprintf(nameFVal,optimScope,iModel)));
 
-            % Load SAM
-            load(fullfile(sprintf(rootDir,iSubj,dt,trialVar,iModelArch),ds.FileNameSAM{1}),'SAM');
-            
-            % Extract optimized X
-            iBestX = cell2mat(cellfun(@(in1) ~isempty(regexp(in1,'^BestX.*', 'once')),ds.Properties.VarNames,'Uni',0));
-            X = double(ds(1,iBestX));
+% Load SAM
+load(fullfile(sprintf(rootDir,iSubj,dt,trialVar,iModelArch),ds.FileNameSAM{1}),'SAM');
 
-            
-            
+% Extract optimized X
+iBestX = cell2mat(cellfun(@(in1) ~isempty(regexp(in1,'^BestX.*', 'once')),ds.Properties.VarNames,'Uni',0));
+X = double(ds(1,iBestX));
+
+
+
 % 2.2. Add details for cluster computing
 % =========================================================================
 SAM.compCluster.nProcessors   = nProcessors;
 
-% 2.3. Adjust the number of starting points 
+% 2.3. Adjust the number of starting points
 % =========================================================================
 SAM.optim.nStartPoint = nModleSimulations;
 
@@ -127,13 +132,13 @@ fNameIterLog          = sprintf('iterLog_cost_%sTrials_model%.3d_started%s.mat',
 fNameFinalLog         = sprintf('finalLog_cost_%sTrials_model%.3d_started%s.mat',optimScope,iModel,timeStr);
 
 % Iteration log file
-fitLog.iterLogFile    = fullfile(SAM.io.workDir,fNameIterLog);
+fitLog.iterLogFile    = fullfile(sprintf(saveDir,iSubj,dt,trialVar,iModelArch),fNameIterLog);
 
 % Iteration lof frequency
 fitLog.iterLogFreq    = 10;
 
 % Final log file
-fitLog.finalLogFile   = fullfile(SAM.io.workDir,fNameFinalLog);
+fitLog.finalLogFile   = fullfile(sprintf(saveDir,iSubj,dt,trialVar,iModelArch),fNameFinalLog);
 
 SAM.optim.log         = fitLog;
 
@@ -178,7 +183,7 @@ pause(tWait);
 myPool = parpool(c);
 
 for iter = 1:nModleSimulations
-    
+    tic
     disp(sprintf('This is iter %.3d',iter))
     
     % Re-seed the random number generatory each time:
@@ -192,6 +197,7 @@ for iter = 1:nModleSimulations
     if iterLogFreq*round(double(iter)/iterLogFreq) == iter;
         save(iterLogFile,'history');
     end
+    toc
 end
 
 % Save the final log file
