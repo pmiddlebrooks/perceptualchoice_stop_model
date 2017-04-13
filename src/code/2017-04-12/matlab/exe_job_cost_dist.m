@@ -28,7 +28,7 @@ setenv('nModelSim','2');
 
 % Subject
 % setenv('subject','1'); %[1 2];
-subject = [1];
+subject = [2];
 
 % SBATCH Settings
 % WALLTIME="15:00:00";
