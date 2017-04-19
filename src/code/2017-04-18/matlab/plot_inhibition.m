@@ -4,7 +4,7 @@ function plot_inhibition(subject,model,architecture,dt,trialVar,optimScope,fileS
 % 1. PROCESS INPUTS & SPECIFY VARIABLES
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 close all
-nSim = 5000;
+nSim = 1000;
 ms2Std = 50;
 % 1.1. Process inputs
 % =========================================================================

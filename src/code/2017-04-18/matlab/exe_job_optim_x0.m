@@ -1,14 +1,12 @@
 
-setenv('pathStr', '/Volumes/HD-1/Users/paulmiddlebrooks/perceptualchoice_stop_model/data/2017-04-12/preproc01/subj%.2d/dt%d/%s/%s/SAM_%sTrials.mat');
-setenv('pathStrInitParam','/Volumes/HD-1/Users/paulmiddlebrooks/perceptualchoice_stop_model/data/2017-04-12/preproc01/subj%.2d/dt%d/%s/%s/SAM_initParam_%sTrials_model%.3d.mat');
-setenv('rootDir','/Volumes/HD-1/Users/paulmiddlebrooks/perceptualchoice_stop_model/data/2017-03-06/preproc01/subj%.2d/dt%d/%s/%s/');
-setenv('saveDir','/Volumes/HD-1/Users/paulmiddlebrooks/perceptualchoice_stop_model/data/2017-04-12/preproc01/subj%.2d/dt%d/%s/%s/');
+setenv('pathStr', '/Volumes/HD-1/Users/paulmiddlebrooks/perceptualchoice_stop_model/data/2017-04-18/preproc01/subj%.2d/dt%d/%s/%s/SAM_%sTrials.mat');
+setenv('pathStrInitParam','/Volumes/HD-1/Users/paulmiddlebrooks/perceptualchoice_stop_model/data/2017-04-18/preproc01/subj%.2d/dt%d/%s/%s/SAM_initParam_%sTrials_model%.3d.mat');
 
 % Optimization scope
-setenv('optimScope','all');
+setenv('optimScope','go');
 
 % Time step
-setenv('dt','1');
+setenv('dt','5');
 
 % Trial variability tag (for starting point, non-decision time, and rate)
 setenv('trialVar','trialvar');
@@ -16,19 +14,19 @@ setenv('trialVar','trialvar');
 % Model architectures
 % setenv('modelArch','crace');
 modelArch = {'crace', 'cli', 'cffi'};
-modelArch = {'crace_ili'};
+modelArch = {'crace'};
 
 % Model variants
 % setenv('model','9');
-model = [352];
+model = [2];
 
 % Number of starting points
 % nStartPoint=2000;
-setenv('nModelSim','3');
+setenv('nStartPoint','2000');
 
 % Subject
 % setenv('subject','1'); %[1 2];
-subject = [2];
+subject = [1];
 
 % SBATCH Settings
 % WALLTIME="15:00:00";
@@ -48,9 +46,8 @@ for iModArch = 1 : length(modelArch)
         for iSub = 1 : length(subject)
             iSubj = subject(iSub);
         
-            for iStartVal = 1 : 1
-            job_cost_dist;
-            end
+            job_optim_x0;
+            
         end
     end
 end
