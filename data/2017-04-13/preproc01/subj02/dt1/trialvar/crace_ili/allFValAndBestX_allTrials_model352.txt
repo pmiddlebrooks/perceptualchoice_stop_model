@@ -1,0 +1,1 @@
+FileIndex	FileNameLog	FileNameSAM	StartValueIndex	FunctionValue	ElapsedTime	ExitFlag	BestX	StartX

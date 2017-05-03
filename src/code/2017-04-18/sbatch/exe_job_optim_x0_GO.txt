@@ -30,7 +30,7 @@ nStartPoint="1000";
 subject="1 3";
 
 # SBATCH Settings
-WALLTIME="4:00:00";
+WALLTIME="2:30:00";
 PPN="4";
 MEM="12000";
 

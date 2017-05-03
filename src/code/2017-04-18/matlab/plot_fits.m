@@ -79,8 +79,8 @@ for iSubject = 1:nSubject
                 case 1
                     iSsd = ceil(length(nSSD) * .65);
                     iSsd = 4;
-                case 2
-                    iSsd = 7;
+                case 3
+                    iSsd = 3;
             end
             
             % Get model predictions and costs
@@ -119,7 +119,7 @@ end
     function plotit(SAM,prd,p,model,iModel,modelStr,cost,altCost, responseSide, accuracy, defective)
         
         % Specify colors and line properties
-        mapShades           	= [.1 .25 .4 .6 .75 .9];
+        mapShades           	= [.2 .4 .6 .8];
         cndClr                  = ccm_colormap(mapShades);
         cndClr(1+length(mapShades)/2 : end, :) = flipud(cndClr(1+length(mapShades)/2 : end, :));
         
@@ -134,7 +134,7 @@ end
             otherwise
                 error('responseSide need to be left, right, or both');
         end
-        conditionArray = 1:3;
+        conditionArray = 1:2;
         
         goCCorrMrkObs           = 'o';
         goCCorrLnObs            = 'none';
@@ -230,13 +230,14 @@ end
             end
             
             % Set axes
+            % Set axes
             switch subject(iSubject)
                 case 1
                     set(gca,'XLim',[200 700], ...
                         'XTick',100:100:700, ...
                         'YLim',[0 1], ...
                         'YTick',0:0.2:1)
-                case 2
+                case 3
                     set(gca,'XLim',[200 500], ...
                         'XTick',100:100:600, ...
                         'YLim',[0 1], ...
@@ -318,7 +319,7 @@ end
                         'XTick',100:100:700, ...
                         'YLim',[0 1], ...
                         'YTick',0:0.2:1)
-                case 2
+                case 3
                     set(gca,'XLim',[200 500], ...
                         'XTick',100:100:600, ...
                         'YLim',[0 1], ...

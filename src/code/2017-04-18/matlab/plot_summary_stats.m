@@ -123,7 +123,7 @@ end
         %             otherwise
         %                 error('responseSide need to be left, right, or both');
         %         end
-        conditionArray = 1:3;
+        conditionArray = 1:2;
         
         goCCorrMrkObs           = 'o';
         goCCorrLnObs            = 'none';
@@ -167,26 +167,26 @@ end
             rtGoCCorrObsL     = obs.rtGoCCorr(trialCatGoL);
             rtGoCCorrPrdL     = prd.rtGoCCorr(trialCatGoL);
             
-            plot(1:3,cellfun(@nanmean, rtGoCCorrObsL),'Color','k','Marker',goCCorrMrkObs,'LineStyle',goCCorrLnObs,'LineWidth',goCCorrLnWidth);
-            plot(1:3,cellfun(@mean, rtGoCCorrPrdL),'Color','k','Marker',goCCorrMrkPrd,'LineStyle',goCCorrLnPrd,'LineWidth',goCCorrLnWidth);
+            plot(1:2,cellfun(@nanmean, rtGoCCorrObsL),'Color','k','Marker',goCCorrMrkObs,'LineStyle',goCCorrLnObs,'LineWidth',goCCorrLnWidth);
+            plot(1:2,cellfun(@mean, rtGoCCorrPrdL),'Color','k','Marker',goCCorrMrkPrd,'LineStyle',goCCorrLnPrd,'LineWidth',goCCorrLnWidth);
             
             rtGoCCorrObsR     = obs.rtGoCCorr(trialCatGoR);
             rtGoCCorrPrdR     = prd.rtGoCCorr(trialCatGoR);
             
-            plot(6:-1:4,cellfun(@nanmean, rtGoCCorrObsR),'Color','k','Marker',goCCorrMrkObs,'LineStyle',goCCorrLnObs,'LineWidth',goCCorrLnWidth);
-            plot(6:-1:4,cellfun(@mean, rtGoCCorrPrdR),'Color','k','Marker',goCCorrMrkPrd,'LineStyle',goCCorrLnPrd,'LineWidth',goCCorrLnWidth);
+            plot(4:-1:3,cellfun(@nanmean, rtGoCCorrObsR),'Color','k','Marker',goCCorrMrkObs,'LineStyle',goCCorrLnObs,'LineWidth',goCCorrLnWidth);
+            plot(4:-1:3,cellfun(@mean, rtGoCCorrPrdR),'Color','k','Marker',goCCorrMrkPrd,'LineStyle',goCCorrLnPrd,'LineWidth',goCCorrLnWidth);
             
             % Set axes
             switch subject(iSubject)
                 case 1
-            set(gca,'XLim',[.5 6.5], ...
-                'XTick',1:6, ...
+            set(gca,'XLim',[.5 4.5], ...
+                'XTick',1:4, ...
+                'YLim',[250 650], ...
+                'YTick',250:50:650)
+                case 3
+           set(gca,'XLim',[.5 4.5], ...
+                'XTick',1:4, ...
                 'YLim',[250 450], ...
-                'YTick',250:50:450)
-                case 2
-           set(gca,'XLim',[.5 6.5], ...
-                'XTick',1:6, ...
-                'YLim',[200 400], ...
                 'YTick',250:50:450)
                 otherwise
                     error('Need to add axes limits for subject')
@@ -208,18 +208,18 @@ end
             pGoCCorrObsL     = 1 - obs.pGoCCorr(trialCatGoL);
             pGoCCorrPrdL     = 1 - prd.pGoCCorr(trialCatGoL);
             
-            plot(1:3,pGoCCorrObsL,'Color','k','Marker',goCCorrMrkObs,'LineStyle',goCCorrLnObs,'LineWidth',goCCorrLnWidth);
+            plot(1:2,pGoCCorrObsL,'Color','k','Marker',goCCorrMrkObs,'LineStyle',goCCorrLnObs,'LineWidth',goCCorrLnWidth);
             %                         plot(1:3,pGoCCorrPrdL,'Color','k','Marker',goCCorrMrkPrd,'LineStyle',goCCorrLnPrd,'LineWidth',goCCorrLnWidth);
             
             pGoCCorrObsR     = obs.pGoCCorr(trialCatGoR);
             pGoCCorrPrdR     = prd.pGoCCorr(trialCatGoR);
             
-            plot(6:-1:4,pGoCCorrObsR,'Color','k','Marker',goCCorrMrkObs,'LineStyle',goCCorrLnObs,'LineWidth',goCCorrLnWidth);
-            plot(1:6,[pGoCCorrPrdL; flipud(pGoCCorrPrdR)],'Color','k','Marker',goCCorrMrkPrd,'LineStyle',goCCorrLnPrd,'LineWidth',goCCorrLnWidth);
+            plot(4:-1:3,pGoCCorrObsR,'Color','k','Marker',goCCorrMrkObs,'LineStyle',goCCorrLnObs,'LineWidth',goCCorrLnWidth);
+            plot(1:4,[pGoCCorrPrdL; flipud(pGoCCorrPrdR)],'Color','k','Marker',goCCorrMrkPrd,'LineStyle',goCCorrLnPrd,'LineWidth',goCCorrLnWidth);
             
             
-            set(gca,'XLim',[.5 6.5], ...
-                'XTick',1:6, ...
+            set(gca,'XLim',[.5 4.5], ...
+                'XTick',1:4, ...
                 'YLim',[0 1], ...
                 'YTick',0:0.2:1)
         end
@@ -276,11 +276,11 @@ end
 
            end
             
-            plot(1:3,cellfun(@nanmean, rtStopIErrorCCorrObsL),'Color','r','Marker',stopIErrorCCorrMrkObs,'LineStyle',stopIErrorCCorrLnObs,'LineWidth',stopIErrorCCorrLnWidth);
-            plot(1:3,cellfun(@mean, rtStopIErrorCCorrPrdL),'Color','r','Marker',stopIErrorCCorrMrkPrd,'LineStyle',stopIErrorCCorrLnPrd,'LineWidth',stopIErrorCCorrLnWidth);
+            plot(1:2,cellfun(@nanmean, rtStopIErrorCCorrObsL),'Color','r','Marker',stopIErrorCCorrMrkObs,'LineStyle',stopIErrorCCorrLnObs,'LineWidth',stopIErrorCCorrLnWidth);
+            plot(1:2,cellfun(@mean, rtStopIErrorCCorrPrdL),'Color','r','Marker',stopIErrorCCorrMrkPrd,'LineStyle',stopIErrorCCorrLnPrd,'LineWidth',stopIErrorCCorrLnWidth);
             
-            plot(6:-1:4,cellfun(@nanmean, rtStopIErrorCCorrObsR),'Color','r','Marker',stopIErrorCCorrMrkObs,'LineStyle',stopIErrorCCorrLnObs,'LineWidth',stopIErrorCCorrLnWidth);
-            plot(6:-1:4,cellfun(@mean, rtStopIErrorCCorrPrdR),'Color','r','Marker',stopIErrorCCorrMrkPrd,'LineStyle',stopIErrorCCorrLnPrd,'LineWidth',stopIErrorCCorrLnWidth);
+            plot(4:-1:3,cellfun(@nanmean, rtStopIErrorCCorrObsR),'Color','r','Marker',stopIErrorCCorrMrkObs,'LineStyle',stopIErrorCCorrLnObs,'LineWidth',stopIErrorCCorrLnWidth);
+            plot(4:-1:3,cellfun(@mean, rtStopIErrorCCorrPrdR),'Color','r','Marker',stopIErrorCCorrMrkPrd,'LineStyle',stopIErrorCCorrLnPrd,'LineWidth',stopIErrorCCorrLnWidth);
             
             
             
@@ -304,13 +304,13 @@ end
             pGoCCorrObsR     = obs.pGoCCorr(trialCatGoR);
             pGoCCorrPrdR     = prd.pGoCCorr(trialCatGoR);
             
-            plot(1:3,pGoCCorrObsL,'Color','k','Marker',goCCorrMrkObs,'LineStyle',goCCorrLnObs,'LineWidth',goCCorrLnWidth);
-            plot(6:-1:4,pGoCCorrObsR,'Color','k','Marker',goCCorrMrkObs,'LineStyle',goCCorrLnObs,'LineWidth',goCCorrLnWidth);
-            plot(1:6,[pGoCCorrPrdL; flipud(pGoCCorrPrdR)],'Color','k','Marker',goCCorrMrkPrd,'LineStyle',goCCorrLnPrd,'LineWidth',goCCorrLnWidth);
+            plot(1:2,pGoCCorrObsL,'Color','k','Marker',goCCorrMrkObs,'LineStyle',goCCorrLnObs,'LineWidth',goCCorrLnWidth);
+            plot(4:-1:3,pGoCCorrObsR,'Color','k','Marker',goCCorrMrkObs,'LineStyle',goCCorrLnObs,'LineWidth',goCCorrLnWidth);
+            plot(1:4,[pGoCCorrPrdL; flipud(pGoCCorrPrdR)],'Color','k','Marker',goCCorrMrkPrd,'LineStyle',goCCorrLnPrd,'LineWidth',goCCorrLnWidth);
             
-            plot(1:3,pStopIErrorCCorrObsL,'Color','r','Marker',stopIErrorCCorrMrkObs,'LineStyle',stopIErrorCCorrLnObs,'LineWidth',stopIErrorCCorrLnWidth);
-            plot(6:-1:4,pStopIErrorCCorrObsR,'Color','r','Marker',stopIErrorCCorrMrkObs,'LineStyle',stopIErrorCCorrLnObs,'LineWidth',stopIErrorCCorrLnWidth);
-            plot(1:6,[pStopIErrorCCorrPrdL, fliplr(pStopIErrorCCorrPrdR)],'Color','r','Marker',stopIErrorCCorrMrkPrd,'LineStyle',stopIErrorCCorrLnPrd,'LineWidth',stopIErrorCCorrLnWidth);
+            plot(1:2,pStopIErrorCCorrObsL,'Color','r','Marker',stopIErrorCCorrMrkObs,'LineStyle',stopIErrorCCorrLnObs,'LineWidth',stopIErrorCCorrLnWidth);
+            plot(4:-1:3,pStopIErrorCCorrObsR,'Color','r','Marker',stopIErrorCCorrMrkObs,'LineStyle',stopIErrorCCorrLnObs,'LineWidth',stopIErrorCCorrLnWidth);
+            plot(1:4,[pStopIErrorCCorrPrdL, fliplr(pStopIErrorCCorrPrdR)],'Color','r','Marker',stopIErrorCCorrMrkPrd,'LineStyle',stopIErrorCCorrLnPrd,'LineWidth',stopIErrorCCorrLnWidth);
             
 
         
@@ -322,19 +322,19 @@ end
             p(4,iModel).select();
             p(4,iModel).hold('on');
             
-            plot(1:3,cellfun(@mean, rtStopICorrPrdL),'Color','r','Marker',stopICorrMrkPrd,'LineStyle',stopICorrLnPrd,'LineWidth',stopICorrLnWidth);
-            plot(6:-1:4,cellfun(@mean, rtStopICorrPrdR),'Color','r','Marker',stopICorrMrkPrd,'LineStyle',stopICorrLnPrd,'LineWidth',stopICorrLnWidth);
+            plot(1:2,cellfun(@mean, rtStopICorrPrdL),'Color','r','Marker',stopICorrMrkPrd,'LineStyle',stopICorrLnPrd,'LineWidth',stopICorrLnWidth);
+            plot(4:-1:3,cellfun(@mean, rtStopICorrPrdR),'Color','r','Marker',stopICorrMrkPrd,'LineStyle',stopICorrLnPrd,'LineWidth',stopICorrLnWidth);
            
             % Set axes
             switch subject(iSubject)
                 case 1
-            set(gca,'XLim',[.5 6.5], ...
-                'XTick',1:6, ...
+            set(gca,'XLim',[.5 4.5], ...
+                'XTick',1:4, ...
                 'YLim',[0 100], ...
                 'YTick',0:20:200)
-                case 2
-           set(gca,'XLim',[.5 6.5], ...
-                'XTick',1:6, ...
+                case 3
+           set(gca,'XLim',[.5 4.5], ...
+                'XTick',1:4, ...
                 'YLim',[0 100], ...
                 'YTick',0:20:200)
                 otherwise
