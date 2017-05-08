@@ -1,0 +1,140 @@
+function ccm_concat_sessions_behavior(subjectID, sessionArray, sessionSetName)
+%%
+% subjectID = 'human';
+% subjectID = 'xena';
+% subjectID = 'broca';
+
+% sessionSet = 'neural2';
+% sessionSetName = 'behavior2';
+% sessionSet = 'neural3';
+
+% task = 'ccm';
+% if nargin < 2
+% [sessionArray, subjectIDArray] = task_session_array(subjectID, task, sessionSetName);
+% end
+%
+% subjectID = 'pm'
+% sessionSet = 'allsaccade';
+% sessionArray = {'pmAllsaccade'}
+% subjectIDArray = {'pm'}
+nSession = length(sessionArray);
+
+
+sessionTag      = [];
+responseOnset   = [];
+fixWindowEntered   = [];
+targ1CheckerProp = [];
+responseCueOn   = [];
+stopSignalOn    = [];
+trialOutcome    = [];
+targOn          = [];
+targAngle       = [];
+targAmp         = [];
+distAngle       = [];
+ssd             = [];
+saccAmp        	= [];
+saccAngle     	= [];
+saccBegin      	= [];
+checkerOn      	= [];
+saccToTargIndex = [];
+toneOn = [];
+rewardOn = [];
+trial = [];
+rt = [];
+
+for iSession = 1 : nSession
+    
+    % Load the data
+    iSessionID = sessionArray{iSession};
+    %     if strcmp('human',subjectID)
+    %         iSessionID = ['hu',iSessionID];
+    %     end
+    variables = [ccm_min_vars, {'targAmp', 'distAngle', 'saccAmp', 'saccBegin'} ];
+ [trialData, SessionData, ~] = load_data(subjectID, iSessionID, variables);
+    
+    %     if ~strcmp(SessionData.taskID, 'ccm')
+    %         error('Not a choice countermanding session, try again\n')
+    %     end
+    
+    
+    iSessionTag         = iSession * ones(size(trialData.trialOutcome, 1), 1);
+    sessionTag          = [sessionTag; iSessionTag];
+    fixWindowEntered          = [fixWindowEntered; trialData.fixWindowEntered];
+    responseOnset       = [responseOnset; trialData.responseOnset];
+    targ1CheckerProp    = [targ1CheckerProp; trialData.targ1CheckerProp];
+    responseCueOn       = [responseCueOn; trialData.responseCueOn];
+    stopSignalOn        = [stopSignalOn; trialData.stopSignalOn];
+    ssd                 = [ssd; trialData.ssd];
+    targOn              = [targOn; trialData.targOn];
+    trialOutcome        = [trialOutcome; trialData.trialOutcome];
+    targAngle           = [targAngle; trialData.targAngle];
+    targAmp             = [targAmp; trialData.targAmp];
+    distAngle           = [distAngle; trialData.distAngle];
+    saccAmp             = [saccAmp; trialData.saccAmp];
+    saccAngle           = [saccAngle; trialData.saccAngle];
+    saccBegin          	= [saccBegin; trialData.saccBegin];
+    checkerOn         	= [checkerOn; trialData.checkerOn];
+    saccToTargIndex    	= [saccToTargIndex; trialData.saccToTargIndex];
+    toneOn    	= [toneOn; trialData.toneOn];
+    rewardOn    	= [rewardOn; trialData.rewardOn];
+    trial    	= [trial; trialData.iTrial];
+    rt    	= [rt; trialData.rt];
+    
+end
+
+
+% trialData = dataset();
+trialData.sessionTag        = sessionTag;
+trialData.fixWindowEntered        = fixWindowEntered;
+trialData.responseOnset     = responseOnset;
+trialData.targ1CheckerProp  = targ1CheckerProp;
+trialData.targOn     = targOn;
+trialData.responseCueOn     = responseCueOn;
+trialData.stopSignalOn      = stopSignalOn;
+trialData.ssd               = ssd_session_adjust(ssd);
+trialData.trialOutcome      = trialOutcome;
+trialData.targAngle         = targAngle;
+trialData.targAmp           = targAmp;
+trialData.distAngle         = distAngle;
+trialData.saccAngle           = saccAngle;
+trialData.saccAmp           = saccAmp;
+trialData.saccBegin         = saccBegin;
+trialData.checkerOn         = checkerOn;
+trialData.saccToTargIndex  	= saccToTargIndex;
+trialData.toneOn  	= toneOn;
+trialData.rewardOn  	= rewardOn;
+trialData.iTrial  	= trial;
+trialData.rt  	= rt;
+
+SessionData.taskID = 'ccm';
+
+trialData.SessionData = SessionData;
+
+% switch lower(subjectID)
+%     case 'human'
+%         pSignalArray = [.35 .42 .46 .54 .58 .65];
+%     case 'broca'
+%         switch sessionSet
+%             case 'behavior1'
+%                 pSignalArray = [.41 .45 .48 .52 .55 .59];
+%             case 'neural1'
+%                 pSignalArray = [.41 .44 .47 .53 .56 .59];
+%             case 'neural2'
+%                 pSignalArray = [.42 .44 .46 .54 .56 .58];
+%             otherwise
+%                 pSignalArray = ExtraVar.pSignalArray;
+%         end
+%     case 'xena'
+%         switch sessionSet
+%             case 'behavior'
+%                 pSignalArray = [.35 .42 .47 .53 .58 .65];
+%                 trialData.targ1CheckerProp(trialData.targ1CheckerProp == .52) = .53;
+%         end
+% end
+
+% new = trialData;
+
+%     save(['~/schalllab/local_data/', subjectID, '/', subjectID, '_', sessionSetName, '.mat'], '-struct', 'trialData', '-mat')
+    save(['~/perceptualchoice_stop_model/data/raw/', subjectID, '_', sessionSetName, '.mat'], '-struct', 'trialData', '-mat')
+
+

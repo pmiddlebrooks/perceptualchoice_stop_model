@@ -1,9 +1,7 @@
-% job_cost_dist
+% pbs_job_optim_x0
 %
-% This script is called by ACCRE's SLURM (Simple Linux Utility for Resource
-% Management) and aims to simulate data reseeding the random number
-% generator to produce a distribution of cost variables (chi-2 and BIC
-% values)
+% This script is called by ACCRE's SLURM (Simple Linux Utility for Resource Management) and aims to find optimal initial parameters, before model
+% optimization starts
 %
 % DESCRIPTION
 % This script contains all the details for the job to run
@@ -26,7 +24,6 @@ else
     modelRoot = '/Volumes/HD-1/Users/paulmiddlebrooks/perceptualchoice_stop_model/';
     environ = 'local';
 end
-
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1. PROCESS INPUTS, DEFINE VARIABLES, ADD ACCESS TO PATHS
@@ -53,14 +50,8 @@ end
 % Get path string
 pathStr               = getenv('pathStr');
 
-% Get root directory
-rootDir               = getenv('rootDir');
-
-% Get save directory
-saveDir               = getenv('saveDir');
-
 % Get path string for initial parameters
-% pathStrInitParam      = getenv('pathStrInitParam');
+pathStrInitParam      = getenv('pathStrInitParam');
 
 
 % Get time step size
@@ -73,7 +64,7 @@ trialVar              = getenv('trialVar');
 optimScope              = getenv('optimScope');
 
 % Number of starting points
-nModleSimulations           = str2double(getenv('nModelSim'));
+nStartPoint           = str2double(getenv('nStartPoint'));
 
 % Get number of processors per node
 nProcessors 	      = str2double(getenv('processorsPerNode'));
@@ -105,40 +96,35 @@ addpath(genpath(fullfile(matRoot,'cmtb')));
 % 2. SAVE AND RUN JOB
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% 2.1. Load the SAM file and Get best fitting paramters for this model
-nameFVal            = 'allFValAndBestX_%sTrials_model%.3d.txt';
-ds = dataset('File',fullfile(sprintf(rootDir,iSubj,dt,trialVar,iModelArch),sprintf(nameFVal,optimScope,iModel)));
-
-% Load SAM
-load(fullfile(sprintf(rootDir,iSubj,dt,trialVar,iModelArch),ds.FileNameSAM{1}),'SAM');
-
-% Extract optimized X
-iBestX = cell2mat(cellfun(@(in1) ~isempty(regexp(in1,'^BestX.*', 'once')),ds.Properties.VarNames,'Uni',0));
-X = double(ds(1,iBestX));
-
-
+% 2.1. Load the general SAM file
+%
+load(sprintf(pathStr,iSubj,dt,trialVar,iModelArch,optimScope));
 
 % 2.2. Add details for cluster computing
 % =========================================================================
 SAM.compCluster.nProcessors   = nProcessors;
 
-% 2.3. Adjust the number of starting points
+% 2.3. Adjust the number of starting points and specify model-specific SAM structure
 % =========================================================================
-SAM.optim.nStartPoint = nModleSimulations;
+SAM.optim.nStartPoint = nStartPoint;
+% If we're simulating data from a previous fit, skip getting the specific
+% SAM structure (because we already have it from job_simulate_data)
+
+SAM                   = sam_spec_job_specific(SAM,iModel);
 
 % 2.4. Add details for logging
 % =========================================================================
-fNameIterLog          = sprintf('iterLog_cost_%sTrials_model%.3d_started%s.mat',optimScope,iModel,timeStr);
-fNameFinalLog         = sprintf('finalLog_cost_%sTrials_model%.3d_started%s.mat',optimScope,iModel,timeStr);
+fNameIterLog          = sprintf('iterLog_initParam_%sTrials_model%.3d_started%s.mat',optimScope,iModel,timeStr);
+fNameFinalLog         = sprintf('finalLog_initParam_%sTrials_model%.3d_started%s.mat',optimScope,iModel,timeStr);
 
 % Iteration log file
-fitLog.iterLogFile    = fullfile(sprintf(saveDir,iSubj,dt,trialVar,iModelArch),fNameIterLog);
+fitLog.iterLogFile    = fullfile(SAM.io.workDir,fNameIterLog);
 
 % Iteration lof frequency
-fitLog.iterLogFreq    = 10;
+fitLog.iterLogFreq    = 50;
 
 % Final log file
-fitLog.finalLogFile   = fullfile(sprintf(saveDir,iSubj,dt,trialVar,iModelArch),fNameFinalLog);
+fitLog.finalLogFile   = fullfile(SAM.io.workDir,fNameFinalLog);
 
 SAM.optim.log         = fitLog;
 
@@ -146,16 +132,16 @@ clear fitLog
 
 % 2.5. Save the init-param SAM file
 % =========================================================================
-% save(sprintf(pathStrInitParam,iSubj,dt,trialVar,iModelArch,optimScope,iModel));
+save(sprintf(pathStrInitParam,iSubj,dt,trialVar,iModelArch,optimScope,iModel));
 
 % 2.6. Loop over all candidate starting points and compute cost, and save every iterFreq
 % =========================================================================================================================
 
-iterLogFile           = SAM.optim.log.iterLogFile;
-iterLogFreq           = SAM.optim.log.iterLogFreq;
-finalLogFile          = SAM.optim.log.finalLogFile;
+iterLogFile           = SAM.optim.log.iterLogFile
+iterLogFreq           = SAM.optim.log.iterLogFreq
+finalLogFile          = SAM.optim.log.finalLogFile
 
-history = nan(nModleSimulations + 1,numel(SAM.optim.x0Base) + 2);
+history = nan(nStartPoint + 1,numel(SAM.optim.x0Base) + 2);
 
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -170,7 +156,7 @@ if isfield(SAM,'compCluster')
 end
 [~,homeDir] = system('echo $HOME');
 homeDir = strtrim(homeDir);
-release = version('-release');
+release = version('-release')
 tempDir = fullfile(homeDir,'.matlab','local_cluster_jobs',release);
 if exist(tempDir) ~= 7
     mkdir(tempDir)
@@ -182,26 +168,25 @@ tWait = 1+60*rand();
 pause(tWait);
 myPool = parpool(c);
 
-for iter = 1:nModleSimulations
-    tic
+for iter = 1:nStartPoint
+    
     disp(sprintf('This is iter %.3d',iter))
     
-    % Re-seed the random number generatory each time:
-    SAM.sim.rng.id = rng('shuffle');
-    
-    [cost,altCost] = sam_cost(X,SAM);
+    [cost,altCost] = sam_cost(SAM.optim.x0(iter,:),SAM);
     
     history(iter,1) = cost;
     history(iter,2) = altCost;
+    history(iter,3:end) = SAM.optim.x0(iter,:);
     
     if iterLogFreq*round(double(iter)/iterLogFreq) == iter;
-        save(iterLogFile,'history');
+        bestX0 = sortrows(history,1);
+        bestX0 = bestX0(1:iterLogFreq,:);
+        save(iterLogFile,'history','bestX0');
     end
-    toc
 end
 
 % Save the final log file
-save(finalLogFile,'history');
+save(finalLogFile,'history','bestX0');
 
 % Remove iteration log file
 delete(iterLogFile);
