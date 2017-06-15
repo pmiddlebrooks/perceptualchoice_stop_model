@@ -484,3 +484,43 @@ for cnd = 1:3
 
        %%  Check Xena's stop Rts
  load('~/perceptualchoice_stop_model/data/2017-05-08/preproc01/subj01/data_subj01.mat')
+
+ 
+ 
+ %%
+ 
+ 
+ subj                    = [3];
+model                   = [79 478];
+trialVar                = true;
+dt                      = 1;
+simScope                = 'all';
+%choiceMech              = {'race','li','ffi'};
+choiceMech              = {'ffi'};
+stopMech                = 'li';
+fileStr.root            = strcat(modelRoot,'/data/2017-05-18/preproc01/subj%.2d/dt%d/%s/%s/');
+fileStr.fitRoot         = strcat(modelRoot,'/data/2017-05-18/preproc01/subj%.2d/dt%d/%s/%s/');
+fileStr.result          = strcat(modelRoot,'/results/2017-05-18/subj%.2d/dt%d/%s/%s/');
+
+    for jChoice = 1 : length(choiceMech)
+        p = find_best_params(subj,trialVar,simScope,choiceMech{jChoice},stopMech,dt,model,fileStr)
+    end
+
+%%
+    
+subj                    = [2];
+model                   = [478];
+trialVar                = true;
+dt                      = 1;
+simScope                = 'all';
+% choiceMech              = {'race','li','ffi'};
+choiceMech              = {'ffi'};
+stopMech                = 'li';
+fileStr.root            = strcat(modelRoot,'/data/2017-05-17/preproc01/subj%.2d/dt%d/%s/%s/');
+fileStr.fitRoot         = strcat(modelRoot,'/data/2017-05-17/preproc01/subj%.2d/dt%d/%s/%s/');
+fileStr.result          = strcat(modelRoot,'/results/2017-05-17/subj%.2d/dt%d/%s/%s/');
+
+    for jChoice = 1 : length(choiceMech)
+        p = find_best_params(subj,trialVar,simScope,choiceMech{jChoice},stopMech,dt,model,fileStr)
+    end
+    

@@ -45,7 +45,7 @@ for iSubject = 1:nSubject
         %                 set_figure({1024,574,'pixels'},{'USLetter','landscape'},{'Helvetica',18});
         p = panel();
         nPlotCol = max(5, nModel);
-        p.pack({.1 .25 .25 .25 .15}, num2cell(repmat(1/nPlotCol,1,nPlotCol)));
+        p.pack({.1 .3 .3 .3}, num2cell(repmat(1/nPlotCol,1,nPlotCol)));
         
         annotation('textbox', [0 0.9 1 0.1], ...
             'String', sprintf('Subject %d, architecture %s',subject(iSubject),architecture{iArchitecture}), ...
@@ -91,7 +91,7 @@ for iSubject = 1:nSubject
                 if exist(saveDir,'dir') ~= 7
                     mkdir(saveDir)
                 end
-                fileName = sprintf('Summary_Stats_BIC_binned');
+                fileName = sprintf('Summary_Stats_Trials_Bins');
                 print(gcf, fullfile(saveDir, fileName),'-dpdf', '-r300')
                 print(gcf, fullfile(saveDir, fileName),'-dpng')
             end
