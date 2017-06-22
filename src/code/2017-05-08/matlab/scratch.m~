@@ -549,10 +549,9 @@ kCancelTime = iSsdArray(kSSD) + maxInd + halfMaxInd;
 
 % For each simulated trial, determine first index of activation function
 % that falls below half-max
-kCancelTime = nan(length(kGoStopActAll), 1);
+kCancelTime = nan(length(kGoStopActAll)
 for a = 1 : length(kGoStopActAll)
-    kCancelTime(a) = find(kGoStopActAll(a,:) < halfMaxGoStopAct, 'first');
-end
+    find(kGoStopActAll(a,:) < halfMaxGoStopAct)
     
     
     

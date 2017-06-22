@@ -12,7 +12,7 @@ ms2Std = 50;
 switch subject
     case 1
         nSim = 38;
-    case 3
+    case 2
         nSim = 43;
 end
 % 1.1. Process inputs
@@ -113,9 +113,9 @@ if savePlot
     if exist(saveDir,'dir') ~= 7
         mkdir(saveDir)
     end
-    fileName = sprintf('Plot_Inhibition_Model_%s_Respond_%s_Accuracy_%s', num2str(model), responseSide, accuracy);
+    fileName = sprintf('Respond_%s_Accuracy_%s', responseSide, accuracy);
     print(gcf, fullfile(saveDir, fileName),'-dpdf', '-r300')
-    print(gcf, fullfile(saveDir, fileName),'-dpng')        
+    print(gcf, fullfile(saveDir, fileName),'-dpng')
 end
 % clear SAM prd
 
@@ -308,11 +308,11 @@ end
                     
                     
                     
-                    if prd.nStopICorr(kTrialCatStop) >= minTrialCond
+                    if obs.nStopICorr(kTrialCatStop) >= minTrialCond
                         
-                        ssrtModel(kTrialCatStop) = mean(prd.rtStopICorr{kTrialCatStop});
-                        
-                        % Slow Go RTs
+                     ssrtModel(kTrialCatStop) = mean(prd.rtStopICorr{kTrialCatStop});
+                     
+                       % Slow Go RTs
                         kGoSlowRTInd = cell2mat(goRTPrd) >  prd.ssd(kTrialCatStop) + ssrtModel(kTrialCatStop);
                         
                         % Only calculate cancel time if there are more than one
@@ -461,7 +461,7 @@ end
                             
                             
                         end
-                        
+                                                
                     end
                     % If there werwe ms2Std consecutive ms of sdfDiff > 2*Std,
                     % check whether the difference ever reached 6*Std
@@ -532,7 +532,7 @@ end
                 p(4,colorCohArray(iCohInd)).hold('on');
                 %                 p(2,colorCohArray(iCohInd)).title({sprintf('%d',round(cost))});
                 plot(iSsdArray, cellfun(@nanmean, cancelTimeDist(iTrialCatStop)),'Color','k','Marker',stopICorrMrkPrd,'LineStyle',stopICorrLnPrd,'LineWidth',stopICorrLnWidth)
-                
+
                 
                 
                 
@@ -548,6 +548,9 @@ end
                 
                 
                 % SSD distributions
+                % ================================================
+                
+                
                 % ================================================
                 p(5,colorCohArray(iCohInd)).select();
                 p(5,colorCohArray(iCohInd)).hold('on');

@@ -12,8 +12,11 @@ ms2Std = 50;
 switch subject
     case 1
         nSim = 38;
+        %         nSim = 100;
+        %         nSim = 76;
     case 3
         nSim = 43;
+        %         nSim = 80;
 end
 % 1.1. Process inputs
 % =========================================================================
@@ -85,6 +88,16 @@ SAM.sim.rng.id = rng('shuffle');
 obs = SAM.optim.obs;
 
 
+% SSD index
+nSSD = unique(obs.ssd(~isnan(obs.ssd)));
+switch subject
+    case 1
+        iSsd = ceil(length(nSSD) * .65);
+        iSsd = 4;
+    case 2
+        iSsd = 7;
+end
+
 % Get model predictions and costs
 % [cost,altCost,prd] = sam_cost(X,SAM);
 prd = sam_sim_expt('explore',X,SAM);
@@ -115,7 +128,8 @@ if savePlot
     end
     fileName = sprintf('Plot_Inhibition_Model_%s_Respond_%s_Accuracy_%s', num2str(model), responseSide, accuracy);
     print(gcf, fullfile(saveDir, fileName),'-dpdf', '-r300')
-    print(gcf, fullfile(saveDir, fileName),'-dpng')        
+    print(gcf, fullfile(saveDir, fileName),'-dpng')
+        
 end
 % clear SAM prd
 
@@ -477,24 +491,30 @@ end
                     
                     
                     
-
                     
+                    
+                    
+                    
+                    
+                    if ~isnan(cancelTime(kTrialCatStop))
+                        switch subject
+                            case 1
+                                yMax = 100;
+                                xMax = 800;
+                                %         nSim = 76;
+                            case 3;
+                                yMax = 25;
+                                xMax = 500;
+                        end
+                        
+                        
+                        
                         
                         
                         
                         %                         % Plot Mean or All individual activation functions
                         %                         % here:
                         %
-%                     if ~isnan(cancelTime(kTrialCatStop))
-%                         switch subject
-%                             case 1
-%                                 yMax = 100;
-%                                 xMax = 800;
-%                                 %         nSim = 76;
-%                             case 3;
-%                                 yMax = 25;
-%                                 xMax = 500;
-%                         end
                         %
                         %                         fprintf('cancel time: %d\tssrt: %d\n', round(cancelTime(kTrialCatStop) - ssrtModel(kTrialCatStop) - iSsdArray(kSSD)), round(ssrtModel(kTrialCatStop)))
                         %                         figure(23)
@@ -517,7 +537,15 @@ end
                         %                         plot([ssrtModel(kTrialCatStop)+iSsdArray(kSSD), ssrtModel(kTrialCatStop)+iSsdArray(kSSD)], [0 yMax], 'b','lineWidth', 4)
                         % %                         pause
                         %                         figure(mainPlots)
-%                     end
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    end
                     
                     
                     
@@ -548,6 +576,9 @@ end
                 
                 
                 % SSD distributions
+                % ================================================
+                
+                
                 % ================================================
                 p(5,colorCohArray(iCohInd)).select();
                 p(5,colorCohArray(iCohInd)).hold('on');
