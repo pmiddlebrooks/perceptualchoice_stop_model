@@ -300,8 +300,11 @@ end
                 % ================================================
                 
                 % goRT indices
-                goIndPrd = cellfun(@(in1) find(in1 > X(zcIndGOCorr), 1), prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sY, 'uni', false);
+                goIndPrd = cellfun(@(in1) find(in1 >= X(zcIndGOCorr), 1), prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sY, 'uni', false);
                 goRTPrd = cellfun(@(in1, in2) in1(in2), prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sX, goIndPrd, 'uni', false);
+                        emptyRT = cellfun(@isempty, goIndPrd);
+                        goIndPrd(emptyRT) = {nan};
+                        goRTPrd(emptyRT) = {nan};
                 % Predicted Cancel Times
                 for kSSD = 1 : length(iSsdArray)
                     kTrialCatStop = (prd.ssd == iSsdArray(kSSD)) & iTrialCatStop;
@@ -313,6 +316,14 @@ end
                         ssrtModel(kTrialCatStop) = mean(prd.rtStopICorr{kTrialCatStop});
                         
                         % Slow Go RTs
+                        if sum(emptyRT)
+                            
+                        goRTPrd
+                        goIndPrd
+                        size(cell2mat(goRTPrd))
+                        size(prd.ssd(kTrialCatStop))
+                        size(ssrtModel(kTrialCatStop))
+                        end
                         kGoSlowRTInd = cell2mat(goRTPrd) >  prd.ssd(kTrialCatStop) + ssrtModel(kTrialCatStop);
                         
                         % Only calculate cancel time if there are more than one
@@ -413,10 +424,6 @@ end
                             % Use a proportion of the maximum to determine cancel time
                             halfMaxGoStopAct = maxGoStopAct * maxActProportion;
                             
-                            % Determine first index of activation function that falls below half-max.
-                            % halfMaxInd = find(kGoStopActAll(:,iSsdArray(kSSD)+maxInd:end) < halfMaxGoStopAct);
-                            
-                            % kCancelTime = iSsdArray(kSSD) + (maxInd + halfMaxInd);
                             % For each simulated trial, determine first index of activation function
                             % that falls below half-max
                             kCancelTime = nan(length(maxInd), 1);

@@ -302,7 +302,10 @@ end
                 % goRT indices
                 goIndPrd = cellfun(@(in1) find(in1 > X(zcIndGOCorr), 1), prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sY, 'uni', false);
                 goRTPrd = cellfun(@(in1, in2) in1(in2), prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sX, goIndPrd, 'uni', false);
-                % Predicted Cancel Times
+                         emptyRT = cellfun(@isempty, goIndPrd);
+                        goIndPrd(emptyRT) = {nan};
+                        goRTPrd(emptyRT) = {nan};
+               % Predicted Cancel Times
                 for kSSD = 1 : length(iSsdArray)
                     kTrialCatStop = (prd.ssd == iSsdArray(kSSD)) & iTrialCatStop;
                     
