@@ -7,6 +7,7 @@ fVal*.txt
 userSpec*.txt
 *initParam*.mat
 SAM*.mat
+cancel_times*.mat
 
 
 # Saved plots #
