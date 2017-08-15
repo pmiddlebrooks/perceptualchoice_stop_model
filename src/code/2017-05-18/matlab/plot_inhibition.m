@@ -12,11 +12,8 @@ ms2Std = 50;
 switch subject
     case 1
         nSim = 38;
-        %         nSim = 100;
-        %         nSim = 76;
     case 3
         nSim = 43;
-        %         nSim = 80;
 end
 % 1.1. Process inputs
 % =========================================================================
@@ -88,16 +85,6 @@ SAM.sim.rng.id = rng('shuffle');
 obs = SAM.optim.obs;
 
 
-% SSD index
-nSSD = unique(obs.ssd(~isnan(obs.ssd)));
-switch subject
-    case 1
-        iSsd = ceil(length(nSSD) * .65);
-        iSsd = 4;
-    case 2
-        iSsd = 7;
-end
-
 % Get model predictions and costs
 % [cost,altCost,prd] = sam_cost(X,SAM);
 prd = sam_sim_expt('explore',X,SAM);
@@ -128,8 +115,7 @@ if savePlot
     end
     fileName = sprintf('Plot_Inhibition_Model_%s_Respond_%s_Accuracy_%s', num2str(model), responseSide, accuracy);
     print(gcf, fullfile(saveDir, fileName),'-dpdf', '-r300')
-    print(gcf, fullfile(saveDir, fileName),'-dpng')
-        
+    print(gcf, fullfile(saveDir, fileName),'-dpng')        
 end
 % clear SAM prd
 
@@ -314,7 +300,7 @@ end
                 % ================================================
                 
                 % goRT indices
-                goIndPrd = cellfun(@(in1) find(in1 > X(zcIndGOCorr), 1), prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sY, 'uni', false);
+                goIndPrd = cellfun(@(in1) find(in1 >= X(zcIndGOCorr), 1), prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sY, 'uni', false);
                 goRTPrd = cellfun(@(in1, in2) in1(in2), prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sX, goIndPrd, 'uni', false);
                         emptyRT = cellfun(@isempty, goIndPrd);
                         goIndPrd(emptyRT) = {nan};
@@ -330,6 +316,14 @@ end
                         ssrtModel(kTrialCatStop) = mean(prd.rtStopICorr{kTrialCatStop});
                         
                         % Slow Go RTs
+                        if sum(emptyRT)
+                            
+                        goRTPrd
+                        goIndPrd
+                        size(cell2mat(goRTPrd))
+                        size(prd.ssd(kTrialCatStop))
+                        size(ssrtModel(kTrialCatStop))
+                        end
                         kGoSlowRTInd = cell2mat(goRTPrd) >  prd.ssd(kTrialCatStop) + ssrtModel(kTrialCatStop);
                         
                         % Only calculate cancel time if there are more than one
@@ -430,10 +424,6 @@ end
                             % Use a proportion of the maximum to determine cancel time
                             halfMaxGoStopAct = maxGoStopAct * maxActProportion;
                             
-                            % Determine first index of activation function that falls below half-max.
-                            % halfMaxInd = find(kGoStopActAll(:,iSsdArray(kSSD)+maxInd:end) < halfMaxGoStopAct);
-                            
-                            % kCancelTime = iSsdArray(kSSD) + (maxInd + halfMaxInd);
                             % For each simulated trial, determine first index of activation function
                             % that falls below half-max
                             kCancelTime = nan(length(maxInd), 1);
@@ -494,30 +484,24 @@ end
                     
                     
                     
+
                     
-                    
-                    
-                    
-                    
-                    if ~isnan(cancelTime(kTrialCatStop))
-                        switch subject
-                            case 1
-                                yMax = 100;
-                                xMax = 800;
-                                %         nSim = 76;
-                            case 3;
-                                yMax = 25;
-                                xMax = 500;
-                        end
-                        
-                        
-                        
                         
                         
                         
                         %                         % Plot Mean or All individual activation functions
                         %                         % here:
                         %
+%                     if ~isnan(cancelTime(kTrialCatStop))
+%                         switch subject
+%                             case 1
+%                                 yMax = 100;
+%                                 xMax = 800;
+%                                 %         nSim = 76;
+%                             case 3;
+%                                 yMax = 25;
+%                                 xMax = 500;
+%                         end
                         %
                         %                         fprintf('cancel time: %d\tssrt: %d\n', round(cancelTime(kTrialCatStop) - ssrtModel(kTrialCatStop) - iSsdArray(kSSD)), round(ssrtModel(kTrialCatStop)))
                         %                         figure(23)
@@ -540,15 +524,7 @@ end
                         %                         plot([ssrtModel(kTrialCatStop)+iSsdArray(kSSD), ssrtModel(kTrialCatStop)+iSsdArray(kSSD)], [0 yMax], 'b','lineWidth', 4)
                         % %                         pause
                         %                         figure(mainPlots)
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                    end
+%                     end
                     
                     
                     
@@ -579,9 +555,6 @@ end
                 
                 
                 % SSD distributions
-                % ================================================
-                
-                
                 % ================================================
                 p(5,colorCohArray(iCohInd)).select();
                 p(5,colorCohArray(iCohInd)).hold('on');
