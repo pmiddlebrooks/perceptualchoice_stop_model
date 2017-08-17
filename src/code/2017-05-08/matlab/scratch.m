@@ -555,6 +555,64 @@ for a = 1 : length(kGoStopActAll)
 end
     
     
+%%
+
+subject                 = [1 3];
+model                   = [79,352,478];
+architecture            = {'crace_ili','cli_ili','cffi_ili'};
+dt                      = 1;
+trialVar                = true;
+simScope                = 'all';
+fileStr.root            = '/Volumes/HD-1/Users/paulmiddlebrooks/perceptualchoice_stop_model/data/2017-05-08/preproc01/subj%.2d/dt%d/%s/%s/';
+fileStr.src             = '/Volumes/HD-1/Users/paulmiddlebrooks/perceptualchoice_stop_model/src/code/2017-05-08/matlab/';
+fileStr.result          = '/Volumes/HD-1/Users/paulmiddlebrooks/perceptualchoice_stop_model/results/2017-05-08/subj%.2d/dt%d/%s/%s/';
+fileStr.root            = '~/perceptualchoice_stop_model/data/2017-05-08/preproc01/subj%.2d/dt%d/%s/%s/';
+fileStr.src             = '~/perceptualchoice_stop_model/src/code/2017-05-08/matlab/';
+fileStr.result          = '~/perceptualchoice_stop_model/results/2017-05-08/subj%.2d/dt%d/%s/%s/';
+responseSide            = {'both'};
+accuracy                = {'correct'};
+savePlot                = true;
+
+if trialVar
+    trialVarStr = 'trialvar';
+else
+    trialVarStr = 'notrialvar';
+end
+
+cd(fileStr.src)
+
+
+% model                   = [79];
+% architecture            = {'crace_ili'};
+
+
+subject = 3;
+model                   = 478;
+architecture            = {'cffi_ili'};
+
+switch subject
+    case 1
+        nSim = 14;
+    case 3
+        nSim = 65;
+end
+
+
+
+for kArch = 1 : length(architecture)
+    for jMod = model
+    modelName = ['model',num2str(jMod)];
+    
+     saveDir             = fullfile(sprintf(fileStr.root,subject,dt,trialVarStr,architecture{kArch}));
+        fileName = sprintf('cancel_times_%s_%sSimulations', modelName, num2str(nSim));
+        load(fullfile(saveDir, fileName))
+        
+    end
+end
+                        
+%%
+
+
     
     
     
