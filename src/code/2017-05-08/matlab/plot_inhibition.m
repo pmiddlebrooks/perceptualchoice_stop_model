@@ -430,18 +430,17 @@ end
                             for a = 1 : length(maxInd)
                                 
                                 
-%                                 figure(24)
-%                                 clf
-%                                 hold 'all'
-%                                 ttl = sprintf('%d Trials\tResp: %d\tCond: %d\n', size(prd.dyn{kTrialCatStop}.stopICorr.goStim.targetGO.sY, 1), iRsp, iCnd);
-%                                 title(ttl)
-%                                 % Stop unit
-%                                 plot(prd.dyn{kTrialCatStop}.stopICorr.goStim.targetSTOP.sY{a}(1:500), 'r')
-%                                 % SLow GO
-%                                 %                         plot(prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sY{a}(1:500), 'g')
-%                                 % Canceled GO
-%                                 plot(prd.dyn{kTrialCatStop}.stopICorr.goStim.targetGO.sY{a}(1:500), 'k')
-                                
+                                figure(24)
+                                clf
+                                hold 'all'
+                                ttl = sprintf('Trial %d SSd %d Resp: %d Cond: %d', a, iSsdArray(kSSD), iRsp, iCnd);
+                                title(ttl)
+                                % Stop unit
+                                plot(prd.dyn{kTrialCatStop}.stopICorr.goStim.targetSTOP.sY{a}(1:500), 'r')
+                                % SLow GO
+                                                        plot(prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sY{a}(1:500), 'g')
+                                % Canceled GO
+                                plot(prd.dyn{kTrialCatStop}.stopICorr.goStim.targetGO.sY{a}(1:500), 'k')
                                 
                                 
                                 
@@ -469,7 +468,6 @@ end
                             
                         end
                         
-                    end
                     % If there werwe ms2Std consecutive ms of sdfDiff > 2*Std,
                     % check whether the difference ever reached 6*Std
                     if ~isnan(cancelTime(kTrialCatStop))
@@ -480,6 +478,7 @@ end
                         if ~sum(std6Ind)
                             cancelTime(kTrialCatStop) = nan;
                         end
+                    end
                     end
                     
                     

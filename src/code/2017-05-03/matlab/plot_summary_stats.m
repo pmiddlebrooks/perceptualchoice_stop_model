@@ -91,7 +91,7 @@ for iSubject = 1:nSubject
                 if exist(saveDir,'dir') ~= 7
                     mkdir(saveDir)
                 end
-                fileName = sprintf('Summary_Stats_BIC_binned');
+                fileName = sprintf('Summary_Stats_Trials_Bins');
                 print(gcf, fullfile(saveDir, fileName),'-dpdf', '-r300')
                 print(gcf, fullfile(saveDir, fileName),'-dpng')
             end

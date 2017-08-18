@@ -582,13 +582,13 @@ end
 cd(fileStr.src)
 
 
-% model                   = [79];
+% model                   = [352];
 % architecture            = {'crace_ili'};
 
 
 subject = 3;
-model                   = 478;
-architecture            = {'cffi_ili'};
+% model                   = 478;
+% architecture            = {'cffi_ili'};
 
 switch subject
     case 1
@@ -607,12 +607,14 @@ for kArch = 1 : length(architecture)
         fileName = sprintf('cancel_times_%s_%sSimulations', modelName, num2str(nSim));
         load(fullfile(saveDir, fileName))
         
+% Use only conditions with >= 10 canceled stop trials
+prd = prd(prd.nStopICorr >= 10, :);    
+prd.cancelTimeDistMean = cellfun(@mean, prd.cancelTimeDist);    
+prd.cancelTime = prd.cancelTime - prd.ssd - prd.ssrt;    
+    
+fprintf('Model: %s %d\tOld CancelTime: %d\tNew CancelTime: %d\n',architecture{kArch},jMod,round(nanmean(prd.cancelTime)), round(nanmean(prd.cancelTimeDistMean)))
     end
 end
                         
 %%
 
-
-    
-    
-    
