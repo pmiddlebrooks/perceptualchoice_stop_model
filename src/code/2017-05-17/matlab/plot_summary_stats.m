@@ -44,7 +44,7 @@ for iSubject = 1:nSubject
         
         %                 set_figure({1024,574,'pixels'},{'USLetter','landscape'},{'Helvetica',18});
         p = panel();
-        nPlotCol = max(5, nModel);
+        nPlotCol = max(3, nModel);
         p.pack({.1 .3 .3 .3}, num2cell(repmat(1/nPlotCol,1,nPlotCol)));
         
         annotation('textbox', [0 0.9 1 0.1], ...
