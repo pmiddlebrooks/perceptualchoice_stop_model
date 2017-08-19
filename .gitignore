@@ -8,6 +8,7 @@ userSpec*.txt
 *initParam*.mat
 SAM*.mat
 cancel_times*.mat
+*.csv
 
 
 # Saved plots #
