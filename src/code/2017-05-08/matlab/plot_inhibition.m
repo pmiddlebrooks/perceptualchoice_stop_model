@@ -430,17 +430,17 @@ end
                             for a = 1 : length(maxInd)
                                 
                                 
-                                figure(24)
-                                clf
-                                hold 'all'
-                                ttl = sprintf('Trial %d SSd %d Resp: %d Cond: %d', a, iSsdArray(kSSD), iRsp, iCnd);
-                                title(ttl)
-                                % Stop unit
-                                plot(prd.dyn{kTrialCatStop}.stopICorr.goStim.targetSTOP.sY{a}(1:500), 'r')
-                                % SLow GO
-                                                        plot(prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sY{a}(1:500), 'g')
-                                % Canceled GO
-                                plot(prd.dyn{kTrialCatStop}.stopICorr.goStim.targetGO.sY{a}(1:500), 'k')
+%                                 figure(24)
+%                                 clf
+%                                 hold 'all'
+%                                 ttl = sprintf('Trial %d SSd %d Resp: %d Cond: %d', a, iSsdArray(kSSD), iRsp, iCnd);
+%                                 title(ttl)
+%                                 % Stop unit
+%                                 plot(prd.dyn{kTrialCatStop}.stopICorr.goStim.targetSTOP.sY{a}(1:500), 'r')
+%                                 % SLow GO
+%                                                         plot(prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sY{a}(1:500), 'g')
+%                                 % Canceled GO
+%                                 plot(prd.dyn{kTrialCatStop}.stopICorr.goStim.targetGO.sY{a}(1:500), 'k')
                                 
                                 
                                 
