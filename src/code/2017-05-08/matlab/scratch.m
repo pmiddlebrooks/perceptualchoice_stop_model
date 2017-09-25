@@ -646,5 +646,69 @@ for kArch = 1 : length(architecture)
     end
 end
 
-%%
+%% GET SSRTS from MODELS
 
+subject                 = [1 3];
+model                   = [79,352,478];
+architecture            = {'crace_ili','cli_ili','cffi_ili'};
+simScope                = 'all';
+dt                      = 1;
+trialVar                = true;
+
+
+cd(fileStr.src)
+
+ssrtTable = table();
+for iSubject = subject
+    for kArch = 1 : length(architecture)
+        for jMod = model
+            modelName = ['model',num2str(jMod)];
+            
+            switch iSubject
+                case 1
+                    if jMod == 478 && strcmp(architecture{kArch}, 'cli_ili') || ...
+                            jMod == 352 && strcmp(architecture{kArch}, 'cffi_ili') || ...
+                            jMod == 478 && strcmp(architecture{kArch}, 'cffi_ili')
+                        fileStr.root            = '~/perceptualchoice_stop_model/data/2017-05-18/preproc01/subj%.2d/dt%d/%s/%s/';
+                        fileStr.src             = '~/perceptualchoice_stop_model/src/code/2017-05-18/matlab/';
+                        fileStr.result          = '~/perceptualchoice_stop_model/results/2017-05-18/subj%.2d/dt%d/%s/%s/';
+                    else
+                        fileStr.root            = '~/perceptualchoice_stop_model/data/2017-05-08/preproc01/subj%.2d/dt%d/%s/%s/';
+                        fileStr.src             = '~/perceptualchoice_stop_model/src/code/2017-05-08/matlab/';
+                        fileStr.result          = '~/perceptualchoice_stop_model/results/2017-05-08/subj%.2d/dt%d/%s/%s/';
+                    end
+                    
+                case 3
+                    if jMod == 352 && strcmp(architecture{kArch}, 'cli_ili') || ...
+                            jMod == 79 && strcmp(architecture{kArch}, 'cffi_ili') || ...
+                            jMod == 478 && strcmp(architecture{kArch}, 'cffi_ili')
+                        fileStr.root            = '~/perceptualchoice_stop_model/data/2017-05-18/preproc01/subj%.2d/dt%d/%s/%s/';
+                        fileStr.src             = '~/perceptualchoice_stop_model/src/code/2017-05-18/matlab/';
+                        fileStr.result          = '~/perceptualchoice_stop_model/results/2017-05-18/subj%.2d/dt%d/%s/%s/';
+                    else
+                        fileStr.root            = '~/perceptualchoice_stop_model/data/2017-05-08/preproc01/subj%.2d/dt%d/%s/%s/';
+                        fileStr.src             = '~/perceptualchoice_stop_model/src/code/2017-05-08/matlab/';
+                        fileStr.result          = '~/perceptualchoice_stop_model/results/2017-05-08/subj%.2d/dt%d/%s/%s/';
+                    end
+            end
+            
+            
+            
+            
+            saveDir             = fullfile(sprintf(fileStr.result,iSubject,dt,trialVarStr,architecture{kArch}));
+            dataFileName = sprintf('Summary_Stats_Trials_Bins_%d',jMod);
+            load(fullfile(saveDir, dataFileName))
+            
+            ssrt = round(mean(cell2mat(cellfun(@(x) x(:), prd.rtStopICorr, 'uni', false))));
+            
+            iTable = {iSubject, architecture(kArch), jMod, cost, altCost, ssrt};
+            ssrtTable = [ssrtTable; iTable];
+            
+            
+        end
+    end
+end
+                        saveTableDir          = '~/perceptualchoice_stop_model/results/2017-05-08/';
+tableFileName = 'dataTable';
+ssrtTable.Properties.VariableNames = {'Subject', 'Architecture', 'Model', 'chi2', 'BIC', 'SSRT'};
+            writetable(ssrtTable, fullfile(saveTableDir,[tableFileName,'.csv']))

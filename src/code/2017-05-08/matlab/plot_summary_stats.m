@@ -93,6 +93,9 @@ for iSubject = 1:nSubject
                 fileName = sprintf('Summary_Stats_Trials_Bins');
                 print(gcf, fullfile(saveDir, fileName),'-dpdf', '-r300')
                 print(gcf, fullfile(saveDir, fileName),'-dpng')
+               dataFileName = sprintf('Summary_Stats_Trials_Bins_%d',model(iModel));
+               save(fullfile(saveDir, dataFileName), 'prd', 'obs','cost','altCost')
+
             end
         end
     end

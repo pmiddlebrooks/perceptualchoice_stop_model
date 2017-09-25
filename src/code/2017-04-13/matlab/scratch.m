@@ -316,9 +316,9 @@ RT3 = nan(length(unique(allData.sess)),1);
 RT6 = nan(length(unique(allData.sess)),1);
 for i = 1 : length(RT3);
     stop3Trial = allData.sess == i & allData.cnd == 3 & allData.ssd ~= 0 & allData.stm1 == 1 & allData.resp == 1;
-RT3(i) = nanmean(allData.rt(stop3Trial));
+    RT3(i) = nanmean(allData.rt(stop3Trial));
     stop3Trial = allData.sess == i & allData.cnd == 1 & allData.ssd ~= 0 & allData.stm1 == 2 & allData.resp == 2;
-RT6(i) = nanmean(allData.rt(stop3Trial));
+    RT6(i) = nanmean(allData.rt(stop3Trial));
 end
 
 
@@ -334,29 +334,29 @@ end
 
 load('~/perceptualchoice_stop_model/data/2016-11-04/preproc01/subj02/data_subj02.mat')
 data = data(data.ssd > 0, :);
-    for cnd = 1:3
-        
-        rt1(cnd) = nanmean(data.rt(data.resp == 1 & data.stm1 == 1 & data.cnd == cnd))
-        rt2(cnd) = nanmean(data.rt(data.resp == 2 & data.stm1 == 2 & data.cnd == cnd))
-    end
+for cnd = 1:3
+    
+    rt1(cnd) = nanmean(data.rt(data.resp == 1 & data.stm1 == 1 & data.cnd == cnd))
+    rt2(cnd) = nanmean(data.rt(data.resp == 2 & data.stm1 == 2 & data.cnd == cnd))
+end
 
-    %%
- load('~/perceptualchoice_stop_model/data/2016-11-04/preproc01/subj02/data_subj02.mat')
+%%
+load('~/perceptualchoice_stop_model/data/2016-11-04/preproc01/subj02/data_subj02.mat')
 data = data(data.ssd == 0, :);
-       for cnd = 1:3
-        
-        rt1(cnd) = nanmean(data.rt(data.resp == 1 & data.stm1 == 1 & data.cnd == cnd))
-        rt2(cnd) = nanmean(data.rt(data.resp == 2 & data.stm1 == 2 & data.cnd == cnd))
-    end
+for cnd = 1:3
+    
+    rt1(cnd) = nanmean(data.rt(data.resp == 1 & data.stm1 == 1 & data.cnd == cnd))
+    rt2(cnd) = nanmean(data.rt(data.resp == 2 & data.stm1 == 2 & data.cnd == cnd))
+end
 %%
 
 load('~/perceptualchoice_stop_model/data/2016-11-04/preproc01/subj01/data_subj01.mat')
 data = data(data.ssd > 0, :);
-    for cnd = 1:3
-        
-        rt1(cnd) = nanmean(data.rt(data.resp == 1 & data.stm1 == 1 & data.cnd == cnd))
-        rt2(cnd) = nanmean(data.rt(data.resp == 2 & data.stm1 == 2 & data.cnd == cnd))
-    end
+for cnd = 1:3
+    
+    rt1(cnd) = nanmean(data.rt(data.resp == 1 & data.stm1 == 1 & data.cnd == cnd))
+    rt2(cnd) = nanmean(data.rt(data.resp == 2 & data.stm1 == 2 & data.cnd == cnd))
+end
 %%
 
 opt = ccm_options;
@@ -366,14 +366,14 @@ colorCoh = unique(trialData.targ1CheckerProp);
 for i = 1 : length(unique(trialData.targ1CheckerProp))
     iCoh = colorCoh(i);
     opt.rightCheckerPct = iCoh * 100;
-
-opt.outcome = {'stopIncorrectTarget'};
-stop1 = ccm_trial_selection(trialData, opt);
-pre1(i) = nanmean(trialData.responseOnset(stop1) - trialData.responseCueOn(stop1));
-
-opt.outcome = {'stopIncorrectTarget', 'targetHoldAbort'};
-stop2 = ccm_trial_selection(trialData, opt);
-pre2(i) = nanmean(trialData.responseOnset(stop2) - trialData.responseCueOn(stop2));
+    
+    opt.outcome = {'stopIncorrectTarget'};
+    stop1 = ccm_trial_selection(trialData, opt);
+    pre1(i) = nanmean(trialData.responseOnset(stop1) - trialData.responseCueOn(stop1));
+    
+    opt.outcome = {'stopIncorrectTarget', 'targetHoldAbort'};
+    stop2 = ccm_trial_selection(trialData, opt);
+    pre2(i) = nanmean(trialData.responseOnset(stop2) - trialData.responseCueOn(stop2));
 end
 
 %%
@@ -385,30 +385,30 @@ colorCoh = unique(trialData.targ1CheckerProp);
 for i = 1 : length(unique(trialData.targ1CheckerProp))
     iCoh = colorCoh(i);
     opt.rightCheckerPct = iCoh * 100;
-
-opt.outcome = {'goCorrectTarget'};
-stop1 = ccm_trial_selection(trialData, opt);
-pre1C(i) = nanmean(trialData.responseOnset(stop1) - trialData.responseCueOn(stop1));
-
-opt.outcome = {'goCorrectTarget', 'targetHoldAbort'};
-stop2 = ccm_trial_selection(trialData, opt);
-pre2C(i) = nanmean(trialData.responseOnset(stop2) - trialData.responseCueOn(stop2));
-
-
-opt.outcome = {'goCorrectDistractor'};
-stop1 = ccm_trial_selection(trialData, opt);
-pre1E(i) = nanmean(trialData.responseOnset(stop1) - trialData.responseCueOn(stop1));
-
-opt.outcome = {'goCorrectDistractor', 'distractorHoldAbort'};
-stop2 = ccm_trial_selection(trialData, opt);
-pre2E(i) = nanmean(trialData.responseOnset(stop2) - trialData.responseCueOn(stop2));
+    
+    opt.outcome = {'goCorrectTarget'};
+    stop1 = ccm_trial_selection(trialData, opt);
+    pre1C(i) = nanmean(trialData.responseOnset(stop1) - trialData.responseCueOn(stop1));
+    
+    opt.outcome = {'goCorrectTarget', 'targetHoldAbort'};
+    stop2 = ccm_trial_selection(trialData, opt);
+    pre2C(i) = nanmean(trialData.responseOnset(stop2) - trialData.responseCueOn(stop2));
+    
+    
+    opt.outcome = {'goCorrectDistractor'};
+    stop1 = ccm_trial_selection(trialData, opt);
+    pre1E(i) = nanmean(trialData.responseOnset(stop1) - trialData.responseCueOn(stop1));
+    
+    opt.outcome = {'goCorrectDistractor', 'distractorHoldAbort'};
+    stop2 = ccm_trial_selection(trialData, opt);
+    pre2E(i) = nanmean(trialData.responseOnset(stop2) - trialData.responseCueOn(stop2));
 end
 
 %%
 subject                 = [1 2];
 model                   = [2,43,79,352,478];
-architecture            = {'crace_ili','cli_ili','cffi_ili'};   
-architecture            = {'crace'};   
+architecture            = {'crace_ili','cli_ili','cffi_ili'};
+architecture            = {'crace'};
 dt                      = 5;
 trialVar                = true;
 simScope                = 'go';
@@ -425,62 +425,129 @@ for iRsp = 1 : length(responseSide)
     respSide = responseSide{iRsp};
     for iAcc = 1 : length(accuracy)
         accur = accuracy{iAcc};
-plot_fits(subject,model,architecture,dt,trialVar,simScope,fileStr,respSide,accur,defective,savePlot); 
+        plot_fits(subject,model,architecture,dt,trialVar,simScope,fileStr,respSide,accur,defective,savePlot);
     end
 end
 
 %%  Check Xena's stop Rts
- load('~/perceptualchoice_stop_model/data/2017-04-13/preproc01/subj02/data_subj02.mat')
+load('~/perceptualchoice_stop_model/data/2017-04-13/preproc01/subj02/data_subj02.mat')
 
- for cnd = 1:3
-        
-        rt1(cnd) = nanmean(data.rt(data.resp == 1 & data.stm1 == 1 & data.cnd == cnd & data.ssd > 0))
-        rt2(cnd) = nanmean(data.rt(data.resp == 2 & data.stm1 == 2 & data.cnd == cnd & data.ssd > 0))
-       end
+for cnd = 1:3
+    
+    rt1(cnd) = nanmean(data.rt(data.resp == 1 & data.stm1 == 1 & data.cnd == cnd & data.ssd > 0))
+    rt2(cnd) = nanmean(data.rt(data.resp == 2 & data.stm1 == 2 & data.cnd == cnd & data.ssd > 0))
+end
 
 %%  Check Xena's stop Rts
- load('~/perceptualchoice_stop_model/data/raw/xena_behavior1.mat')
+load('~/perceptualchoice_stop_model/data/raw/xena_behavior1.mat')
 
- opt = ccm_options;
+opt = ccm_options;
 opt.ssd = 'collapse';
 trialData.targ1CheckerProp(trialData.targ1CheckerProp == .52) = .53;
 colorCoh = unique(trialData.targ1CheckerProp);
 for i = 1 : length(unique(trialData.targ1CheckerProp))
     iCoh = colorCoh(i);
     opt.rightCheckerPct = iCoh * 100;
-
-% opt.outcome = {'stopIncorrectTarget'};
-% stop1 = ccm_trial_selection(trialData, opt);
-% pre1(i) = nanmean(trialData.responseOnset(stop1) - trialData.responseCueOn(stop1));
-
-opt.outcome = {'stopIncorrectTarget', 'targetHoldAbort'};
-stop2 = ccm_trial_selection(trialData, opt);
-size(stop2)
-pre2(i) = nanmean(trialData.responseOnset(stop2) - trialData.responseCueOn(stop2));
+    
+    % opt.outcome = {'stopIncorrectTarget'};
+    % stop1 = ccm_trial_selection(trialData, opt);
+    % pre1(i) = nanmean(trialData.responseOnset(stop1) - trialData.responseCueOn(stop1));
+    
+    opt.outcome = {'stopIncorrectTarget', 'targetHoldAbort'};
+    stop2 = ccm_trial_selection(trialData, opt);
+    size(stop2)
+    pre2(i) = nanmean(trialData.responseOnset(stop2) - trialData.responseCueOn(stop2));
 end
 
 %%
 data = allData;
 for cnd = 1:3
-        nTrial1(cnd) = sum(data.resp == 1 & data.stm1 == 1 & data.cnd == cnd & data.ssd > 0)
-        nTrial2(cnd) = sum(data.resp == 2 & data.stm1 == 2 & data.cnd == cnd & data.ssd > 0)
-        rt1(cnd) = nanmean(data.rt(data.resp == 1 & data.stm1 == 1 & data.cnd == cnd & data.ssd > 0))
-        rt2(cnd) = nanmean(data.rt(data.resp == 2 & data.stm1 == 2 & data.cnd == cnd & data.ssd > 0))
-       end
+    nTrial1(cnd) = sum(data.resp == 1 & data.stm1 == 1 & data.cnd == cnd & data.ssd > 0)
+    nTrial2(cnd) = sum(data.resp == 2 & data.stm1 == 2 & data.cnd == cnd & data.ssd > 0)
+    rt1(cnd) = nanmean(data.rt(data.resp == 1 & data.stm1 == 1 & data.cnd == cnd & data.ssd > 0))
+    rt2(cnd) = nanmean(data.rt(data.resp == 2 & data.stm1 == 2 & data.cnd == cnd & data.ssd > 0))
+end
 
-    
-       %%
-       for cnd = 1:3
-       goCCorr1(cnd) = sum(data.cnd == cnd & data.resp ==1 & data.stm1 == 1 & data.ssd == 0)
-       goCCorr2(cnd) = sum(data.cnd == cnd & data.resp ==2 & data.stm1 == 2 & data.ssd == 0)
-       goCErr1(cnd) = sum(data.cnd == cnd & data.resp ==2 & data.stm1 == 1 & data.ssd == 0)
-       goCErrr2(cnd) = sum(data.cnd == cnd & data.resp ==1 & data.stm1 == 2 & data.ssd == 0)
-       stopICCorr1(cnd) = sum(data.cnd == cnd & data.resp ==1 & data.stm1 == 1 & data.ssd > 0)
-       stopICCorr2(cnd) = sum(data.cnd == cnd & data.resp ==2 & data.stm1 == 2 & data.ssd > 0)
-       stopICErr1(cnd) = sum(data.cnd == cnd & data.resp ==2 & data.stm1 == 1 & data.ssd > 0)
-       stopICErr2(cnd) = sum(data.cnd == cnd & data.resp ==1 & data.stm1 == 2 & data.ssd > 0)
-       stopCorrect(cnd) = sum(data.cnd == cnd & data.ssd > 0 & data.acc == 1 & isnan(data.resp))
-       end
 
-       %%  Check Xena's stop Rts
- load('~/perceptualchoice_stop_model/data/2017-04-13/preproc01/subj01/data_subj01.mat')
+%%
+for cnd = 1:3
+    goCCorr1(cnd) = sum(data.cnd == cnd & data.resp ==1 & data.stm1 == 1 & data.ssd == 0)
+    goCCorr2(cnd) = sum(data.cnd == cnd & data.resp ==2 & data.stm1 == 2 & data.ssd == 0)
+    goCErr1(cnd) = sum(data.cnd == cnd & data.resp ==2 & data.stm1 == 1 & data.ssd == 0)
+    goCErrr2(cnd) = sum(data.cnd == cnd & data.resp ==1 & data.stm1 == 2 & data.ssd == 0)
+    stopICCorr1(cnd) = sum(data.cnd == cnd & data.resp ==1 & data.stm1 == 1 & data.ssd > 0)
+    stopICCorr2(cnd) = sum(data.cnd == cnd & data.resp ==2 & data.stm1 == 2 & data.ssd > 0)
+    stopICErr1(cnd) = sum(data.cnd == cnd & data.resp ==2 & data.stm1 == 1 & data.ssd > 0)
+    stopICErr2(cnd) = sum(data.cnd == cnd & data.resp ==1 & data.stm1 == 2 & data.ssd > 0)
+    stopCorrect(cnd) = sum(data.cnd == cnd & data.ssd > 0 & data.acc == 1 & isnan(data.resp))
+end
+
+%%  Check Xena's stop Rts
+load('~/perceptualchoice_stop_model/data/2017-04-13/preproc01/subj01/data_subj01.mat')
+
+
+
+%% GET SSRTS from MODELS
+
+subject                 = [1 2];
+model                   = [79,352,478];
+architecture            = {'crace_ili','cli_ili','cffi_ili'};
+simScope                = 'all';
+dt                      = 1;
+trialVar                = true;
+
+
+cd(fileStr.src)
+
+ssrtTable = table();
+for iSubject = subject
+    for kArch = 1 : length(architecture)
+        for jMod = model
+            modelName = ['model',num2str(jMod)];
+            
+            switch iSubject
+                case 1
+                    if jMod == 478 && strcmp(architecture{kArch}, 'crace_ili') || ...
+                            jMod == 478 && strcmp(architecture{kArch}, 'cffi_ili')
+                        fileStr.root            = '~/perceptualchoice_stop_model/data/2017-05-17/preproc01/subj%.2d/dt%d/%s/%s/';
+                        fileStr.src             = '~/perceptualchoice_stop_model/src/code/2017-05-17/matlab/';
+                        fileStr.result          = '~/perceptualchoice_stop_model/results/2017-05-17/subj%.2d/dt%d/%s/%s/';
+                    else
+                        fileStr.root            = '~/perceptualchoice_stop_model/data/2017-04-13/preproc01/subj%.2d/dt%d/%s/%s/';
+                        fileStr.src             = '~/perceptualchoice_stop_model/src/code/2017-04-13/matlab/';
+                        fileStr.result          = '~/perceptualchoice_stop_model/results/2017-04-13/subj%.2d/dt%d/%s/%s/';
+                    end
+                    
+                case 2
+                    if jMod == 352 && strcmp(architecture{kArch}, 'cli_ili') || ...
+                            jMod == 478 && strcmp(architecture{kArch}, 'cffi_ili')
+                        fileStr.root            = '~/perceptualchoice_stop_model/data/2017-05-17/preproc01/subj%.2d/dt%d/%s/%s/';
+                        fileStr.src             = '~/perceptualchoice_stop_model/src/code/2017-05-17/matlab/';
+                        fileStr.result          = '~/perceptualchoice_stop_model/results/2017-05-17/subj%.2d/dt%d/%s/%s/';
+                    else
+                        fileStr.root            = '~/perceptualchoice_stop_model/data/2017-04-13/preproc01/subj%.2d/dt%d/%s/%s/';
+                        fileStr.src             = '~/perceptualchoice_stop_model/src/code/2017-04-13/matlab/';
+                        fileStr.result          = '~/perceptualchoice_stop_model/results/2017-04-13/subj%.2d/dt%d/%s/%s/';
+                    end
+            end
+            
+            
+            
+            
+            saveDir             = fullfile(sprintf(fileStr.result,iSubject,dt,trialVarStr,architecture{kArch}));
+            dataFileName = sprintf('Summary_Stats_Trials_Bins_%d',jMod);
+            load(fullfile(saveDir, dataFileName))
+            
+            ssrt = round(mean(cell2mat(cellfun(@(x) x(:), prd.rtStopICorr, 'uni', false))));
+            
+            iTable = {iSubject, architecture(kArch), jMod, cost, altCost, ssrt};
+            ssrtTable = [ssrtTable; iTable];
+            
+            
+        end
+    end
+end
+saveTableDir          = '~/perceptualchoice_stop_model/results/2017-04/13/';
+tableFileName = 'dataTable';
+ssrtTable.Properties.VariableNames = {'Subject', 'Architecture', 'Model', 'chi2', 'BIC', 'SSRT'};
+writetable(ssrtTable, fullfile(saveTableDir,[tableFileName,'.csv']))
