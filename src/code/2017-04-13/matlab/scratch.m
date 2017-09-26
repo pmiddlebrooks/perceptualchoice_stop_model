@@ -547,7 +547,7 @@ for iSubject = subject
         end
     end
 end
-saveTableDir          = '~/perceptualchoice_stop_model/results/2017-04/13/';
+saveTableDir          = '~/perceptualchoice_stop_model/results/2017-04-13/';
 tableFileName = 'dataTable';
 ssrtTable.Properties.VariableNames = {'Subject', 'Architecture', 'Model', 'chi2', 'BIC', 'SSRT'};
 writetable(ssrtTable, fullfile(saveTableDir,[tableFileName,'.csv']))
