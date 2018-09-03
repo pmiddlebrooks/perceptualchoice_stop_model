@@ -538,9 +538,12 @@ for iSubject = subject
             dataFileName = sprintf('Summary_Stats_Trials_Bins_%d',jMod);
             load(fullfile(saveDir, dataFileName))
             
-            ssrt = round(mean(cell2mat(cellfun(@(x) x(:), prd.rtStopICorr, 'uni', false))));
-            
-            iTable = {iSubject, architecture(kArch), jMod, cost, altCost, ssrt};
+        dist = cell2mat(cellfun(@(x) x(:), prd.rtStopICorr, 'uni', false));
+            dist(dist == Inf) = [];
+            ssrt = round(mean(dist));
+            ssrtStd = round(std(dist));
+                
+            iTable = {iSubject, architecture(kArch), jMod, cost, altCost, ssrt, ssrtStd};
             ssrtTable = [ssrtTable; iTable];
             
             
@@ -549,5 +552,5 @@ for iSubject = subject
 end
 saveTableDir          = '~/perceptualchoice_stop_model/results/2017-04-13/';
 tableFileName = 'dataTable';
-ssrtTable.Properties.VariableNames = {'Subject', 'Architecture', 'Model', 'chi2', 'BIC', 'SSRT'};
+ssrtTable.Properties.VariableNames = {'Subject', 'Architecture', 'Model', 'chi2', 'BIC', 'SSRT', 'SSRT_Std'};
 writetable(ssrtTable, fullfile(saveTableDir,[tableFileName,'.csv']))

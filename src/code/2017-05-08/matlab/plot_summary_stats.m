@@ -36,6 +36,31 @@ modelStr            = {'zc','t0','v/ve','zc & t0','zc & v/ve','t0 & v/ve','zc, t
 % Loop over subjects, architectures, and models
 warning('off','stats:dataset:ModifiedVarnames')
 for iSubject = 1:nSubject
+    
+    % For each subject, get the SSRTs calculated from observed data
+    opt = ccm_options;
+    opt.plotFlag = false;
+    opt.printPlot = false;
+    switch subject(iSubject)
+        case 1
+            inhSubj = 'broca';
+            sessionSet = {...
+                'bp242n02';...
+                'bp244n02';...
+                'bp245n02';...
+                'bp246n02';...
+                'bp247n02'};
+        case 3
+            inhSubj = 'joule';
+            sessionSet = {...
+                'jp110n02';...
+                'jp114n04';...
+                'jp121n02';...
+                'jp124n04';...
+                'jp125n04'};
+    end
+            data = ccm_inhibition_population(inhSubj, sessionSet, opt);
+    
     for iArchitecture = 1:nArchitecture
         
         % Set up the figure and panels
@@ -44,7 +69,8 @@ for iSubject = 1:nSubject
         
         %                 set_figure({1024,574,'pixels'},{'USLetter','landscape'},{'Helvetica',18});
         p = panel();
-        p.pack({.1 .3 .3 .3}, num2cell(repmat(1/nModel,1,nModel)));
+        nPlotCol = max(3, nModel);
+        p.pack({.1 .3 .3 .3}, num2cell(repmat(1/nPlotCol,1,nPlotCol)));
         
         annotation('textbox', [0 0.9 1 0.1], ...
             'String', sprintf('Subject %d, architecture %s',subject(iSubject),architecture{iArchitecture}), ...
@@ -93,9 +119,9 @@ for iSubject = 1:nSubject
                 fileName = sprintf('Summary_Stats_Trials_Bins');
                 print(gcf, fullfile(saveDir, fileName),'-dpdf', '-r300')
                 print(gcf, fullfile(saveDir, fileName),'-dpng')
-               dataFileName = sprintf('Summary_Stats_Trials_Bins_%d',model(iModel));
-               save(fullfile(saveDir, dataFileName), 'prd', 'obs','cost','altCost')
-
+                dataFileName = sprintf('Summary_Stats_Trials_Bins_%d',model(iModel));
+                save(fullfile(saveDir, dataFileName), 'prd', 'obs','cost','altCost')
+                
             end
         end
     end
@@ -146,8 +172,10 @@ end
         stopIErrorCCorrLnPrd    = '--';
         stopIErrorCCorrLnWidth  = 2;
         
+        stopICorrMrkObs         = '*';
+        stopICorrLnObs          = 'none';
         stopICorrMrkPrd         = 'none';
-        stopICorrLnPrd          = '--';
+        stopICorrLnPrd          = '-';
         stopICorrLnWidth        = 2;
         
         
@@ -182,15 +210,19 @@ end
             % Set axes
             switch subject(iSubject)
                 case 1
-            set(gca,'XLim',[.5 4.5], ...
-                'XTick',1:4, ...
-                'YLim',[250 650], ...
-                'YTick',250:50:650)
+%                     set(gca,'XLim',[.5 4.5], ...
+%                         'XTick',1:4, ...
+%                         'YLim',[250 650], ...
+%                         'YTick',250:50:650)
+                    set(gca,'XLim',[.5 4.5], ...
+                        'XTick',1:4, ...
+                        'YLim',[0 600], ...
+                        'YTick',0:100:600)
                 case 3
-           set(gca,'XLim',[.5 4.5], ...
-                'XTick',1:4, ...
-                'YLim',[250 450], ...
-                'YTick',250:50:450)
+                    set(gca,'XLim',[.5 4.5], ...
+                        'XTick',1:4, ...
+                        'YLim',[250 450], ...
+                        'YTick',250:50:450)
                 otherwise
                     error('Need to add axes limits for subject')
             end
@@ -252,13 +284,13 @@ end
             for iCondition = 1:length(conditionArray);
                 
                 
-                              
+                
                 iTrialCatStopL = cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd.*c%d.*GO.*r%d',iCondition,1), 'once')),prd.trialCat,'Uni',0));
                 iTrialCatStopR = cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd.*c%d.*GO.*r%d',iCondition,2), 'once')),prd.trialCat,'Uni',0));
- 
+                
                 
                 % Get Stop RTs
-
+                
                 rtStopIErrorCCorrObsL{iCondition}   = cell2mat(obs.rtStopIErrorCCorr(iTrialCatStopL));
                 rtStopIErrorCCorrPrdL{iCondition} 	= cell2mat(cellfun(@(x) reshape(x, [], 1), prd.rtStopIErrorCCorr(iTrialCatStopL), 'uni', false));
                 rtStopICorrPrdL{iCondition}         = cell2mat(cellfun(@(x) reshape(x, [], 1), prd.rtStopICorr(iTrialCatStopL), 'uni', false));
@@ -275,9 +307,9 @@ end
                 pStopIErrorCCorrPrdR(iCondition) 	= sum(prd.nStopIErrorCCorr(iTrialCatStopR)) / sum(prd.nStopIErrorCCorr(iTrialCatStopR) + prd.nStopIErrorCError(iTrialCatStopR));
                 
                 
-
-
-           end
+                
+                
+            end
             
             plot(1:2,cellfun(@nanmean, rtStopIErrorCCorrObsL),'Color','r','Marker',stopIErrorCCorrMrkObs,'LineStyle',stopIErrorCCorrLnObs,'LineWidth',stopIErrorCCorrLnWidth);
             plot(1:2,cellfun(@mean, rtStopIErrorCCorrPrdL),'Color','r','Marker',stopIErrorCCorrMrkPrd,'LineStyle',stopIErrorCCorrLnPrd,'LineWidth',stopIErrorCCorrLnWidth);
@@ -315,37 +347,38 @@ end
             plot(4:-1:3,pStopIErrorCCorrObsR,'Color','r','Marker',stopIErrorCCorrMrkObs,'LineStyle',stopIErrorCCorrLnObs,'LineWidth',stopIErrorCCorrLnWidth);
             plot(1:4,[pStopIErrorCCorrPrdL, fliplr(pStopIErrorCCorrPrdR)],'Color','r','Marker',stopIErrorCCorrMrkPrd,'LineStyle',stopIErrorCCorrLnPrd,'LineWidth',stopIErrorCCorrLnWidth);
             
-
-        
-        
-        
-        
-                    % SSRTS
+            
+            
+            
+            
+            
+            % SSRTS
             % ================================================
-            p(4,iModel).select();
-            p(4,iModel).hold('on');
+            p(2,iModel).select();
+            p(2,iModel).hold('on');
             
             plot(1:2,cellfun(@mean, rtStopICorrPrdL),'Color','r','Marker',stopICorrMrkPrd,'LineStyle',stopICorrLnPrd,'LineWidth',stopICorrLnWidth);
             plot(4:-1:3,cellfun(@mean, rtStopICorrPrdR),'Color','r','Marker',stopICorrMrkPrd,'LineStyle',stopICorrLnPrd,'LineWidth',stopICorrLnWidth);
-           
-            % Set axes
-            switch subject(iSubject)
-                case 1
-            set(gca,'XLim',[.5 4.5], ...
-                'XTick',1:4, ...
-                'YLim',[0 100], ...
-                'YTick',0:20:200)
-                case 3
-           set(gca,'XLim',[.5 4.5], ...
-                'XTick',1:4, ...
-                'YLim',[0 100], ...
-                'YTick',0:20:200)
-                otherwise
-                    error('Need to add axes limits for subject')
-            end
+            plot(1:4,mean(data.ssrtIntWeight, 1),'Color','r','Marker',stopICorrMrkObs,'LineStyle',stopICorrLnObs,'LineWidth',stopICorrLnWidth);
+            
+%             % Set axes
+%             switch subject(iSubject)
+%                 case 1
+%                     set(gca,'XLim',[.5 4.5], ...
+%                         'XTick',1:4, ...
+%                         'YLim',[0 100], ...
+%                         'YTick',0:20:200)
+%                 case 3
+%                     set(gca,'XLim',[.5 4.5], ...
+%                         'XTick',1:4, ...
+%                         'YLim',[0 100], ...
+%                         'YTick',0:20:200)
+%                 otherwise
+%                     error('Need to add axes limits for subject')
+%             end
             
             
-end
+        end
     end
 
 end

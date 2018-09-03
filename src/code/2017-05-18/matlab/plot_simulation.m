@@ -6,11 +6,20 @@ function plot_simulation(subject,model,architecture,dt,trialVar,fileStr, savePlo
 
 % 1.0 hard-code which conditions and responses to plot for now
 close all
-conditionArray       = 2;
-responseArray   = 1;
+conditionArray       = 1; % 1 is easy, 2 is hard
 accuracy        = 'both';
-responseSide    = 'right';
-nSim = 50;
+responseSide    = 'left';
+nSim = 70;
+
+newOrRepeatSimulation = 'new';
+rngSeedId = 0;
+
+
+if strcmp(responseSide, 'right')
+responseArray   = 2;
+elseif strcmp(responseSide, 'left')
+ responseArray   = 1;
+end   
 % 1.1. Process inputs
 % =========================================================================
 
@@ -38,7 +47,8 @@ modelStr            = {'zc','t0','v/ve','zc & t0','zc & v/ve','t0 & v/ve','zc, t
 
 % 1.4 Hard code some plot parameters
 % =========================================================================
-rtLim = 400;  % how far out do draw starting point and threshold
+rtLim = 500;  % how far out do draw starting point and threshold
+rtLim = 700;  % how far out do draw starting point and threshold
 zcLim = 150;  % how far out do draw starting point and threshold
 unitGoCorr = 1;
 unitGoError = 2;
@@ -61,25 +71,25 @@ for iSubject = 1:nSubject
     
     switch subject(iSubject)
         case 1
-            iSsdInd = 5;
-            iSsdInd = 3;
-        case 2
-            iSsdInd = 16;
+            iSsdIndCancel = 4;
+            iSsdIndNoncancel = 4;
+        case 3
+            iSsdIndCancel = 3;
+            iSsdIndNoncancel = 3;
     end
+    
+    
     % Set up the figure and panels
     %         [axisWidth, axisHeight, xAxesPosition, yAxesPosition] = standard_figure;
     standard_figure(1,1,'landscape', figureHandle);
     
     %                 set_figure({1024,574,'pixels'},{'USLetter','landscape'},{'Helvetica',18});
     p = panel();
-    p.pack({.05 .475 .475}, 3);
-%     p.pack({.05 .475 .475}, num2cell(repmat(1/nModel,1,nModel)));
+    p.pack({.04 .32 .32 .32}, 2);
+    %     p.pack({.05 .475 .475}, num2cell(repmat(1/nModel,1,nModel)));
     
     
     for iArchitecture = 1:nArchitecture
-        p(2,iArchitecture).select();
-        p(2,iArchitecture).hold('on');
-        p(2,iArchitecture).title({sprintf('Architecture %s',architecture{iArchitecture})});
         
         for iModel = 1:nModel
             modelNum = model(iModel);
@@ -93,6 +103,7 @@ for iSubject = 1:nSubject
             
             % Load SAM
             load(fullfile(sprintf(rootDir,subject(iSubject),dt,trialVarStr,architecture{iArchitecture}),ds.FileNameSAM{1}),'SAM');
+            
             
             % Specificy observations
             obs = SAM.optim.obs;
@@ -111,6 +122,13 @@ for iSubject = 1:nSubject
             % Alter the simulations for efficiency
             SAM.sim.n = nSim;
             
+            switch newOrRepeatSimulation
+                case 'new'
+                    SAM.sim.rng.id = randi(100);  % set a random rng for a new simulation
+                case 'repeat'
+                    SAM.sim.rng.id = rngSeedId;
+            end
+                    
             prd = sam_sim_expt('explore',X,SAM);
             
             
@@ -159,6 +177,48 @@ for iSubject = 1:nSubject
                 
                 
                 
+                
+                % CORRECT CHOICE GO TRIAL
+                
+                
+                % Identify the relevant rows in the dataset array
+                iTrialCatGo = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('goTrial.*GO.*r%d.*c%d',iRspCorr,iCnd), 'once')),prd.trialCat,'Uni',0)));
+                if isempty(iTrialCatGo)
+                    iTrialCatGo = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('goTrial_c%d.*',iCnd), 'once')),prd.trialCat,'Uni',0)));
+                end
+                    goTrialCat = iTrialCatGo;
+                
+                
+                % GoCCorr unit
+                % -----------------------------------------------------------------
+                if strcmp(accuracy, 'both') || strcmp(accuracy, 'correct')
+                    
+                    p(4,1).select();
+                    p(4,1).hold('on');
+                    p(4,1).title({sprintf('GO CORRECT: %s',architecture{iArchitecture})});
+                    set_the_axes('go')
+                    
+                    % plot  unit dynamics
+                    dynTimeGoCorr = prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sX;
+                    dynActGoCorr = prd.dyn{iTrialCatGo}.goCCorr.goStim.targetGO.sY;
+                    cellfun(@(x,y) plot(x,y, 'Color',unitLnSingleClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',1), dynTimeGoCorr,dynActGoCorr, 'uni', false)
+                    
+                    % plot starting point z0 and threshold zc
+                    %                     plot([0 rtLim],[X(z0IndGOCorr) X(z0IndGOCorr)], 'Color',unitLnClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',z0LnWidth)
+                    plot([0 rtLim],[X(zcIndGOCorr) X(zcIndGOCorr)], 'Color',unitLnClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',zcLnWidth)
+                    
+                    fprintf('\nMean RT GO Correct: %d\n', round(mean(prd.rtGoCCorr{iTrialCatGo})))
+                    
+                end
+                
+                
+                
+                
+                
+                
+                % CANCELED STOP TRIAL
+                
+                
                 % Identify the relevant rows in the dataset array
                 switch optimScope
                     case {'go'}
@@ -167,154 +227,209 @@ for iSubject = 1:nSubject
                             iTrialCatGo = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('goTrial_c%d.*',iCnd), 'once')),prd.trialCat,'Uni',0)));
                         end
                     case {'all'}
-                        iTrialCatGo = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd%d.*GO.*r%d.*c%d',iSsdInd,iRspCorr,iCnd), 'once')),prd.trialCat,'Uni',0)));
+                        iTrialCatGo = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd%d.*GO.*r%d.*c%d',iSsdIndCancel,iRspCorr,iCnd), 'once')),prd.trialCat,'Uni',0)));
                         
                         if isempty(iTrialCatGo)
-                            iTrialCatGo = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd%d.*c%d.*r%d.*',iSsdInd,iCnd,iRspCorr), 'once')),prd.trialCat,'Uni',0)));
+                            iTrialCatGo = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd%d.*c%d.*r%d.*',iSsdIndCancel,iCnd,iRspCorr), 'once')),prd.trialCat,'Uni',0)));
                         end
                 end
                 
                 iSsd = prd.ssd(iTrialCatGo);
                 
-                % CANCELED STOP TRIAL
                 
-                % GoCError unit
-                % -----------------------------------------------------------------
-                if strcmp(accuracy, 'both')
-                    
-                    % plot Average unit dynamics
-                    dynTimeGoError = prd.dyn{iTrialCatGo}.stopICorr.goStim.nonTargetGO.sX;
-                    dynActGoError = prd.dyn{iTrialCatGo}.stopICorr.goStim.nonTargetGO.sY;
-                    cellfun(@(x,y) plot(x,y, 'Color',unitLnSingleClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',1), dynTimeGoError,dynActGoError, 'uni', false)
-                    
-                    % plot starting point z0 and threshold zc
-                    plot([0 rtLim],[X(z0IndGOError) X(z0IndGOError)], 'Color',unitLnClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',z0LnWidth)
-                    plot([0 rtLim],[X(zcIndGOError) X(zcIndGOError)], 'Color',unitLnClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',zcLnWidth)
-                end
+                
                 % GoCCorr unit
                 % -----------------------------------------------------------------
                 if strcmp(accuracy, 'both') || strcmp(accuracy, 'correct')
                     
-                    % plot Average unit dynamics
+                    p(2,1).select();
+                    p(2,1).hold('on');
+                    p(2,1).title({sprintf('CANCELED: %s',architecture{iArchitecture})});
+                    set_the_axes('go')
+                    
+                    % plot  unit dynamics
                     dynTimeGoCorr = prd.dyn{iTrialCatGo}.stopICorr.goStim.targetGO.sX;
                     dynActGoCorr = prd.dyn{iTrialCatGo}.stopICorr.goStim.targetGO.sY;
                     cellfun(@(x,y) plot(x,y, 'Color',unitLnSingleClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',1), dynTimeGoCorr,dynActGoCorr, 'uni', false)
                     
                     % plot starting point z0 and threshold zc
-                    plot([0 rtLim],[X(z0IndGOCorr) X(z0IndGOCorr)], 'Color',unitLnClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',z0LnWidth)
+                    %                     plot([0 rtLim],[X(z0IndGOCorr) X(z0IndGOCorr)], 'Color',unitLnClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',z0LnWidth)
                     plot([0 rtLim],[X(zcIndGOCorr) X(zcIndGOCorr)], 'Color',unitLnClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',zcLnWidth)
                 end
+                
+                
+                % GoCError unit
+                % -----------------------------------------------------------------
+                if strcmp(accuracy, 'both')
+                    
+%                     p(3,1).select();
+%                     p(3,1).hold('on');
+%                     set_the_axes('go')
+%                     
+%                     % plot  unit dynamics
+%                     dynTimeGoError = prd.dyn{iTrialCatGo}.stopICorr.goStim.nonTargetGO.sX;
+%                     dynActGoError = prd.dyn{iTrialCatGo}.stopICorr.goStim.nonTargetGO.sY;
+%                     cellfun(@(x,y) plot(x,y, 'Color',unitLnSingleClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',1), dynTimeGoError,dynActGoError, 'uni', false)
+%                     
+%                     % plot starting point z0 and threshold zc
+%                     %                     plot([0 rtLim],[X(z0IndGOError) X(z0IndGOError)], 'Color',unitLnClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',z0LnWidth)
+%                     plot([0 rtLim],[X(zcIndGOError) X(zcIndGOError)], 'Color',unitLnClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',zcLnWidth)
+                end
+                
+                
+                
                 % Stop unit
                 % -----------------------------------------------------------------
                 
-                    % plot Average unit dynamics
-                    dynTimeStop = prd.dyn{iTrialCatGo}.stopICorr.goStim.targetSTOP.sX;
-                    dynActStop = prd.dyn{iTrialCatGo}.stopICorr.goStim.targetSTOP.sY;
-                    cellfun(@(x,y) plot(x(iSsd+1:end),y(iSsd+1:end), 'Color',unitLnSingleClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',1), dynTimeStop,dynActStop, 'uni', false)
-                    dynTimeStop = nanmean(cell2mat(dynTimeStop));
-                    dynActStop = nanmean(cell2mat(dynActStop));
-                    
-                    % plot starting point z0 and threshold zc, and SSD
-                    plot([iSsd iSsd],[0 1.1*max([X(zcIndGOCorr), X(zcIndSTOP)])], 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',z0LnWidth)
-                    plot([iSsd+1 rtLim],[X(z0IndSTOP) X(z0IndSTOP)], 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',z0LnWidth)
-                    plot([iSsd+1 rtLim],[X(zcIndSTOP) X(zcIndSTOP)], 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',zcLnWidth)
+                p(3,1).select();
+                p(3,1).hold('on');
+                set_the_axes('stop')
                 
-                    
-                    
+                % plot  unit dynamics
+                dynTimeStop = prd.dyn{iTrialCatGo}.stopICorr.goStim.targetSTOP.sX;
+                dynActStop = prd.dyn{iTrialCatGo}.stopICorr.goStim.targetSTOP.sY;
+                cellfun(@(x,y) plot(x(iSsd+1:end),y(iSsd+1:end), 'Color',unitLnSingleClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',1), dynTimeStop,dynActStop, 'uni', false)
+                dynTimeStop = nanmean(cell2mat(dynTimeStop));
+                dynActStop = nanmean(cell2mat(dynActStop));
+                
+                % plot starting point z0 and threshold zc, and SSD
+                %                     plot([iSsd iSsd],[0 1.1*max([X(zcIndGOCorr), X(zcIndSTOP)])], 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',z0LnWidth)
+                %                     plot([iSsd+1 rtLim],[X(z0IndSTOP) X(z0IndSTOP)], 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',z0LnWidth)
+                plot([iSsd+1 rtLim],[X(zcIndSTOP) X(zcIndSTOP)], 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',zcLnWidth)
+                
+                
+                
                 % Plot mean funcitons
-                plot(nanmean(cell2mat(dynTimeGoCorr)), nanmean(cell2mat(dynActGoCorr)), 'Color',unitLnClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',unitLnWidth(unitGoCorr))
-                plot(nanmean(cell2mat(dynTimeGoError)), nanmean(cell2mat(dynActGoError)), 'Color',unitLnClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',unitLnWidth(unitGoError))
-                plot(dynTimeStop(iSsd+1:end), dynActStop(iSsd+1:end), 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',unitLnWidth(unitStop))
+                %                 plot(nanmean(cell2mat(dynTimeGoCorr)), nanmean(cell2mat(dynActGoCorr)), 'Color',unitLnClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',unitLnWidth(unitGoCorr))
+                %                 plot(nanmean(cell2mat(dynTimeGoError)), nanmean(cell2mat(dynActGoError)), 'Color',unitLnClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',unitLnWidth(unitGoError))
+                %                 plot(dynTimeStop(iSsd+1:end), dynActStop(iSsd+1:end), 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',unitLnWidth(unitStop))
                 
-                % Set axes
-                switch subject(iSubject)
-                    case 1
-                        set(gca,'XLim',[0 rtLim], ...
-                            'XTick',0:100:rtLim, ...
-                            'YLim',[0 1.1*max([X(zcIndGOCorr), X(zcIndSTOP)])], ...
-                            'YTick',0:10:100)
-                    case 2
-                        set(gca,'XLim',[0 rtLim], ...
-                            'XTick',0:100:rtLim, ...
-                            'YLim',[0 1.1*max([X(zcIndGOCorr), X(zcIndSTOP)])], ...
-                            'YTick',0:10:100)
-                    otherwise
-                        error('Need to add axes limits for subject')
-                end
+                
+                
+                
+                
+                
+                
                 
                 
                 
                 
                 % NONCANCELED STOP TRIAL
-                p(3,iArchitecture).select();
-                p(3,iArchitecture).hold('on');
                 
-                 % GoCError unit
-                % -----------------------------------------------------------------
-                if strcmp(accuracy, 'both')
-                    
-                    % plot Average unit dynamics
-                    dynTimeGoError = prd.dyn{iTrialCatGo}.stopIErrorCCorr.goStim.nonTargetGO.sX;
-                    dynActGoError = prd.dyn{iTrialCatGo}.stopIErrorCCorr.goStim.nonTargetGO.sY;
-                    cellfun(@(x,y) plot(x,y, 'Color',unitLnSingleClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',1), dynTimeGoError,dynActGoError, 'uni', false)
-                    
-                    % plot starting point z0 and threshold zc
-                    plot([0 rtLim],[X(z0IndGOError) X(z0IndGOError)], 'Color',unitLnClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',z0LnWidth)
-                    plot([0 rtLim],[X(zcIndGOError) X(zcIndGOError)], 'Color',unitLnClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',zcLnWidth)
+                
+                % Identify the relevant rows in the dataset array
+                switch optimScope
+                    case {'go'}
+                        iTrialCatGo = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('goTrial.*GO.*r%d.*c%d',iRspCorr,iCnd), 'once')),prd.trialCat,'Uni',0)));
+                        if isempty(iTrialCatGo)
+                            iTrialCatGo = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('goTrial_c%d.*',iCnd), 'once')),prd.trialCat,'Uni',0)));
+                        end
+                    case {'all'}
+                        iTrialCatGo = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd%d.*GO.*r%d.*c%d',iSsdIndNoncancel,iRspCorr,iCnd), 'once')),prd.trialCat,'Uni',0)));
+                        
+                        if isempty(iTrialCatGo)
+                            iTrialCatGo = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('stopTrial.*ssd%d.*c%d.*r%d.*',iSsdIndNoncancel,iCnd,iRspCorr), 'once')),prd.trialCat,'Uni',0)));
+                        end
                 end
-               % GoCCorr unit
+                
+                iSsd = prd.ssd(iTrialCatGo);
+                
+                
+                
+                % GoCCorr unit
                 % -----------------------------------------------------------------
                 if strcmp(accuracy, 'both') || strcmp(accuracy, 'correct')
+                    
+                    p(2,2).select();
+                    p(2,2).hold('on');
+                    p(2,2).title({sprintf('NONCANCELED: %s',architecture{iArchitecture})});
+                    set_the_axes('go')
+                    
                     
                     % plot Average unit dynamics
                     dynTimeGoCorr = prd.dyn{iTrialCatGo}.stopIErrorCCorr.goStim.respGO.sX;
                     dynActGoCorr = prd.dyn{iTrialCatGo}.stopIErrorCCorr.goStim.respGO.sY;
                     cellfun(@(x,y) plot(x,y, 'Color',unitLnSingleClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',1), dynTimeGoCorr,dynActGoCorr, 'uni', false)
                     
+                    fprintf('\nMean RT Noncanceled: %d\n', round(mean(prd.rtStopIErrorCCorr{iTrialCatGo})))
                     % plot starting point z0 and threshold zc
-                    plot([0 rtLim],[X(z0IndGOCorr) X(z0IndGOCorr)], 'Color',unitLnClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',z0LnWidth)
+                    %                     plot([0 rtLim],[X(z0IndGOCorr) X(z0IndGOCorr)], 'Color',unitLnClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',z0LnWidth)
                     plot([0 rtLim],[X(zcIndGOCorr) X(zcIndGOCorr)], 'Color',unitLnClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',zcLnWidth)
                 end
-                % Stop unit
-                % -----------------------------------------------------------------                   
-                    % plot Average unit dynamics
-                    dynTimeStop = prd.dyn{iTrialCatGo}.stopIErrorCCorr.goStim.targetSTOP.sX;
-                    dynActStop = prd.dyn{iTrialCatGo}.stopIErrorCCorr.goStim.targetSTOP.sY;
-                    cellfun(@(x,y) plot(x(iSsd+1:end),y(iSsd+1:end), 'Color',unitLnSingleClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',1), dynTimeStop,dynActStop, 'uni', false)
-                    dynTimeStop = nanmean(cell2mat(dynTimeStop));
-                    dynActStop = nanmean(cell2mat(dynActStop));
+                
+                
+                
+                % GoCError unit
+                % -----------------------------------------------------------------
+                if strcmp(accuracy, 'both')
                     
-                    % plot starting point z0 and threshold zc
-                    plot([iSsd iSsd],[0 1.1*max([X(zcIndGOCorr), X(zcIndSTOP)])], 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',z0LnWidth)
-                    plot([iSsd+1 rtLim],[X(z0IndSTOP) X(z0IndSTOP)], 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',z0LnWidth)
-                    plot([iSsd+1 rtLim],[X(zcIndSTOP) X(zcIndSTOP)], 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',zcLnWidth)
-                
-                % Plot mean funcitons
-                % Normalize the 
-                lastInd = cellfun(@(x) find(isnan(x), 1)-1, dynActGoCorr);
-                normFactor = repmat(mean(lastInd) ./ lastInd, 1, length(dynActGoCorr{1}));
-                
-                normFn = normFactor .* cell2mat(dynTimeGoCorr);
-                normFn = repmat(lastInd .* normFactor, (size(dynActGoCorr, 1)), length(dynActGoCorr{1}));
-                for i = 1 : size(dynActGoCorr, 1)
-                    normFn(i, 1:lastInd(i)) = dynTimeGoCorr{i}(1:lastInd(i)) * normFactor(i);
+%                     p(3,2).select();
+%                     p(3,2).hold('on');
+%                     set_the_axes('go')
+%                     
+%                     % plot Average unit dynamics
+%                     dynTimeGoError = prd.dyn{iTrialCatGo}.stopIErrorCCorr.goStim.nonTargetGO.sX;
+%                     dynActGoError = prd.dyn{iTrialCatGo}.stopIErrorCCorr.goStim.nonTargetGO.sY;
+%                     cellfun(@(x,y) plot(x,y, 'Color',unitLnSingleClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',1), dynTimeGoError,dynActGoError, 'uni', false)
+%                     
+%                     % plot starting point z0 and threshold zc
+%                     %                     plot([0 rtLim],[X(z0IndGOError) X(z0IndGOError)], 'Color',unitLnClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',z0LnWidth)
+%                     plot([0 rtLim],[X(zcIndGOError) X(zcIndGOError)], 'Color',unitLnClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',zcLnWidth)
                 end
-                plot(nanmean(normFn), nanmean(cell2mat(dynActGoCorr)), 'Color',unitLnClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',unitLnWidth(unitGoCorr));
-%                 plot(nanmean(cell2mat(dynTimeGoCorr)), nanmean(cell2mat(dynActGoCorr)), 'Color',unitLnClr(unitGoCorr,:),'LineStyle',unitLnStyle{unitGoCorr},'LineWidth',unitLnWidth(unitGoCorr))
-                plot(nanmean(cell2mat(dynTimeGoError)), nanmean(cell2mat(dynActGoError)), 'Color',unitLnClr(unitGoError,:),'LineStyle',unitLnStyle{unitGoError},'LineWidth',unitLnWidth(unitGoError))
-                plot(dynTimeStop(iSsd+1:end), dynActStop(iSsd+1:end), 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',unitLnWidth(unitStop))
+                
+                
+                
+                                % Stop unit
+                                % -----------------------------------------------------------------
+                
+                                p(3,2).select();
+                                p(3,2).hold('on');
+                                set_the_axes('stop')
+                
+                                % plot Average unit dynamics
+                                    dynTimeStop = prd.dyn{iTrialCatGo}.stopIErrorCCorr.goStim.targetSTOP.sX;
+                                    dynActStop = prd.dyn{iTrialCatGo}.stopIErrorCCorr.goStim.targetSTOP.sY;
+                                    cellfun(@(x,y) plot(x(iSsd+1:end),y(iSsd+1:end), 'Color',unitLnSingleClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',1), dynTimeStop,dynActStop, 'uni', false)
+                                    dynTimeStop = nanmean(cell2mat(dynTimeStop));
+                                    dynActStop = nanmean(cell2mat(dynActStop));
+                
+                                    % plot starting point z0 and threshold zc
+                %                     plot([iSsd iSsd],[0 1.1*max([X(zcIndGOCorr), X(zcIndSTOP)])], 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',z0LnWidth)
+                %                     plot([iSsd+1 rtLim],[X(z0IndSTOP) X(z0IndSTOP)], 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',z0LnWidth)
+                                    plot([iSsd+1 rtLim],[X(zcIndSTOP) X(zcIndSTOP)], 'Color',unitLnClr(unitStop,:),'LineStyle',unitLnStyle{unitStop},'LineWidth',zcLnWidth)
                 
                 
                 
                 
-                % Set axes
+                
+                set(gcf,'renderer','painters')
+                % Save plot
+                if savePlot
+                    saveDir             = fullfile(sprintf(fileStr.result,subject(iSubject),dt,trialVarStr,'simulations'));
+                    if exist(saveDir,'dir') ~= 7
+                        mkdir(saveDir)
+                    end
+                    fileName = sprintf('%s_%s_Simulation_Respond_%s_Accuracy_%s_Coherence_%d_SSD_%d_RT_%d', architecture{1}, optimScope, responseSide, accuracy, iCnd, iSsd, round(mean(prd.rtGoCCorr{goTrialCat})));
+                    print(gcf, fullfile(saveDir, fileName),'-dpdf', '-r300')
+%                     print(gcf, fullfile(saveDir, fileName),'-depsc', '-r300')
+                end
+            end
+        end
+    end
+end
+
+
+    function set_the_axes(goOrStopUnit)
+        % Set axes
+        switch goOrStopUnit
+            case 'go'
                 switch subject(iSubject)
                     case 1
                         set(gca,'XLim',[0 rtLim], ...
                             'XTick',0:100:rtLim, ...
-                            'YLim',[0 1.1*max([X(zcIndGOCorr), X(zcIndSTOP)])], ...
-                            'YTick',0:10:100)
-                    case 2
+                            'YLim',[0 max([X(zcIndGOCorr), X(zcIndSTOP)])], ...  % 'YLim',[0 1.1*max([X(zcIndGOCorr), X(zcIndSTOP)])]
+                            'YTick',0:40:160)
+                    case 3
                         set(gca,'XLim',[0 rtLim], ...
                             'XTick',0:100:rtLim, ...
                             'YLim',[0 1.1*max([X(zcIndGOCorr), X(zcIndSTOP)])], ...
@@ -322,84 +437,23 @@ for iSubject = 1:nSubject
                     otherwise
                         error('Need to add axes limits for subject')
                 end
-            end
-            
-            
-            %             % RT distribution Go trials: Error Choices
-            %             % ================================================
-            %             if  strcmp(accuracy, 'both') || strcmp(accuracy, 'error')
-            %
-            %                 p(3,iArchitecture).select();
-            %                 p(3,iArchitecture).hold('on');
-            %
-            %                 for iResponse = 1:length(responseArray)
-            %                     for iCondition = 1:length(conditionArray);
-            %
-            %                         iRsp = responseArray(iResponse);
-            %                         iCnd = conditionArray(iCondition);
-            %
-            %                         % Identify the relevant rows in the dataset array
-            %                         %         iTrialCatGo = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('goTrial.*GO:c%d',iCnd), 'once')),prd.trialCat,'Uni',0)));
-            %                         iTrialCatGo = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('goTrial.*GO.*r%d.*c%d',iRsp,iCnd), 'once')),prd.trialCat,'Uni',0)));
-            %                         if isempty(iTrialCatGo)
-            %                             iTrialCatGo = find(cell2mat(cellfun(@(in1) ~isempty(regexp(in1,sprintf('goTrial_c%d.*',iCnd), 'once')),prd.trialCat,'Uni',0)));
-            %                         end
-            %
-            %
-            %                         % GoCError trials
-            %                         % -----------------------------------------------------------------
-            %
-            %                             rtGoCErrorObs     = obs.rtQGoCError{iTrialCatGo};
-            %                             cumPGoCErrorObs   = obs.cumProbGoCError{iTrialCatGo};
-            %
-            %                             rtGoCErrorPrd     = prd.rtGoCError{iTrialCatGo};
-            %                             cumPGoCErrorPrd   = cmtb_edf(prd.rtGoCError{iTrialCatGo}(:),prd.rtGoCError{iTrialCatGo}(:));
-            %
-            %                             % Plot it
-            %                             iColor = cndClr((length(conditionArray) * (iRsp -1) + iCondition), :);
-            %                             plot(rtGoCErrorObs,cumPGoCErrorObs,'Color',iColor,'Marker',goCErrorMrkObs,'LineStyle',goCErrorLnObs,'LineWidth',goCErrorLnWidth);
-            %                             plot(rtGoCErrorPrd,cumPGoCErrorPrd,'Color',iColor,'Marker',goCErrorMrkPrd,'LineStyle',goCErrorLnPrd,'LineWidth',goCErrorLnWidth);
-            %
-            %                     end
-            %                 end
-            %
-            %                 % Set axes
-            %                 switch subject(iSubject)
-            %                     case 1
-            %                         set(gca,'XLim',[0 rtLim], ...
-            %                             'XTick',0:100:rtLim, ...
-            %                             'YLim',[0 120], ...
-            %                             'YTick',0:10:100)
-            %                     case 2
-            %                         set(gca,'XLim',[0 rtLim], ...
-            %                             'XTick',0:100:rtLim, ...
-            %                             'YLim',[0 120], ...
-            %                             'YTick',0:10:100)
-            %                     otherwise
-            %                         error('Need to add axes limits for subject')
-            %                 end
-            %
-            %             end
-            
-            
-            
-            
-     set(gcf,'renderer','painters')       
-            % Save plot
-            if savePlot
-                saveDir             = fullfile(sprintf(fileStr.result,subject(iSubject),dt,trialVarStr,'simulations'));
-                if exist(saveDir,'dir') ~= 7
-                    mkdir(saveDir)
+            case 'stop'
+                switch subject(iSubject)
+                    case 1
+                        set(gca,'XLim',[0 rtLim], ...
+                            'XTick',0:100:rtLim, ...
+                            'YLim',[0 100], ...  % 'YLim',[0 1.1*max(X(zcIndSTOP))], ...
+                            'YTick',0:10:50)
+                    case 3
+                        set(gca,'XLim',[0 rtLim], ...
+                            'XTick',0:100:rtLim, ...
+                            'YLim',[0 1.1*max(X(zcIndSTOP))], ...
+                            'YTick',0:10:30)
+                    otherwise
+                        error('Need to add axes limits for subject')
                 end
-                fileName = sprintf('%s_%s_Simulation_Respond_%s_Accuracy_%s_SSD_%d', architecture{1}, optimScope, responseSide, accuracy, iSsd);
-                print(gcf, fullfile(saveDir, fileName),'-dpdf', '-r300')
-                print(gcf, fullfile(saveDir, fileName),'-depsc', '-r300')
-            end
         end
+        
     end
-end
-
-
-
 end
 

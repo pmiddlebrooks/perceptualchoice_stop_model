@@ -5,6 +5,7 @@ function plot_fits(subject,model,architecture,dt,trialVar,optimScope,fileStr,res
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 close all
 nSim = 5000;
+nSim = 100;
 % 1.1. Process inputs
 % =========================================================================
 
@@ -60,6 +61,7 @@ for iSubject = 1:nSubject
             % Load model-specific fits with cost function values
 
             ds = dataset('File',fullfile(sprintf(rootDir,subject(iSubject),dt,trialVarStr,architecture{iArchitecture}),sprintf(nameFVal,optimScope,model(iModel))));
+%             ds = dataset('File',fullfile(sprintf(rootDir,subject(iSubject),dt,trialVarStr,architecture{iArchitecture}),sprintf(nameFVal,optimScope,modelNum)));
 
             % Load SAM
             load(fullfile(sprintf(rootDir,subject(iSubject),dt,trialVarStr,architecture{iArchitecture}),ds.FileNameSAM{1}),'SAM');
@@ -101,7 +103,7 @@ for iSubject = 1:nSubject
                 end
                 fileName = sprintf('Respond_%s_Accuracy_%s', responseSide, accuracy);
                 print(gcf, fullfile(saveDir, fileName),'-dpdf', '-r300')
-                print(gcf, fullfile(saveDir, fileName),'-dpng')
+%                 print(gcf, fullfile(saveDir, fileName),'-dpng')
             end
             clear SAM prd
 
@@ -135,7 +137,7 @@ end
             otherwise
                 error('responseSide need to be left, right, or both');
         end
-        conditionArray = 1:3;
+        conditionArray = 1:2;
         
         goCCorrMrkObs           = 'o';
         goCCorrLnObs            = 'none';
@@ -173,7 +175,7 @@ end
             p(2,iModel).title({sprintf('%d',round(cost))});
             
             for iResponse = 1:length(responseArray)
-                for iCondition = 1:length(conditionArray);
+                for iCondition = 1:length(conditionArray)
                     
                     iRsp = responseArray(iResponse);
                     iCnd = conditionArray(iCondition);
@@ -340,7 +342,7 @@ end
             %                        sprintf('BIC = %.1f',altCost)});
             
             for iResponse = 1:length(responseArray)
-                for iCondition = 1:length(conditionArray);
+                for iCondition = 1:length(conditionArray)
                     
                     iRsp = responseArray(iResponse);
                     iCnd = conditionArray(iCondition);

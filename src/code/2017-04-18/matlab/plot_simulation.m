@@ -63,7 +63,7 @@ for iSubject = 1:nSubject
         case 1
             iSsdInd = 5;
             iSsdInd = 3;
-        case 2
+        case 3
             iSsdInd = 16;
     end
     % Set up the figure and panels

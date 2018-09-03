@@ -72,13 +72,6 @@ for iSubject = 1:nSubject
         case 2
             iSsdIndCancel = 7;
     end
-    %     switch subject(iSubject)
-    %         case 1
-    %             iSsdInd = 5;
-    %             iSsdInd = 3;
-    %         case 2
-    %             iSsdInd = 16;
-    %     end
     
     % Set up the figure and panels
     %         [axisWidth, axisHeight, xAxesPosition, yAxesPosition] = standard_figure;

@@ -9,6 +9,7 @@ userSpec*.txt
 SAM*.mat
 cancel_times*.mat
 *.csv
+*.zip
 
 
 # Saved plots #
@@ -16,6 +17,7 @@ cancel_times*.mat
 *.pdf
 *.png
 *.jpg
+*.eps
 
 # html version of ipython notebooks #
 ######################
