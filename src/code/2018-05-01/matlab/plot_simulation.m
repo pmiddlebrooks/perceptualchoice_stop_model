@@ -6,7 +6,11 @@ function plot_simulation(subject,model,architecture,dt,trialVar,fileStr, savePlo
 
 % 1.0 hard-code which conditions and responses to plot for now
 close all
+if subject == 2 || (subject == 1 && model == 79)
+conditionArray       = [1,2,3]; % 1 is easy, 2 is hard
+else
 conditionArray       = [1,2]; % 1 is easy, 2 is hard
+end
 accuracy        = 'both';
 responseSide    = {'left','right'};
 nSim = 100;
@@ -69,6 +73,9 @@ for iSubject = 1:nSubject
         case 1
             iSsdIndCancel = 4;
             iSsdIndNoncancel = 4;
+        case 2
+            iSsdIndCancel = 7;
+            iSsdIndNoncancel = 3;
         case 3
             iSsdIndCancel = 3;
             iSsdIndNoncancel = 3;
@@ -277,7 +284,9 @@ for iSubject = 1:nSubject
  end                   
                     
                     fprintf('Respond_%s_Accuracy_%s_Coherence_%d:\n', responseSide{iRspInd}, accuracy, iCnd)
+                    disp('Z0:')
                     prd.modelMat{iTrialCatGo}.Z0
+                    disp('V:')
                     prd.modelMat{iTrialCatGo}.V
                     
                     
@@ -487,7 +496,8 @@ for iSubject = 1:nSubject
                         print(gcf, fullfile(saveDir, fileName),'-dpdf', '-r300')
                         %                     print(gcf, fullfile(saveDir, fileName),'-depsc', '-r300')
                     end
-                    
+                   
+                    pause
                 end
             end
         end
@@ -505,6 +515,11 @@ end
                             'XTick',0:100:rtLim, ...
                             'YLim',[0 max([X(zcIndGOCorr), X(zcIndSTOP)])], ...  % 'YLim',[0 1.1*max([X(zcIndGOCorr), X(zcIndSTOP)])]
                             'YTick',0:40:160)
+                    case 2
+                        set(gca,'XLim',[0 rtLim], ...
+                            'XTick',0:100:rtLim, ...
+                            'YLim',[0 1.1*max([X(zcIndGOCorr), X(zcIndSTOP)])], ...
+                            'YTick',0:10:100)
                     case 3
                         set(gca,'XLim',[0 rtLim], ...
                             'XTick',0:100:rtLim, ...
@@ -520,6 +535,11 @@ end
                             'XTick',0:100:rtLim, ...
                             'YLim',[0 100], ...  % 'YLim',[0 1.1*max(X(zcIndSTOP))], ...
                             'YTick',0:10:50)
+                    case 2
+                        set(gca,'XLim',[0 rtLim], ...
+                            'XTick',0:100:rtLim, ...
+                            'YLim',[0 1.1*max(X(zcIndSTOP))], ...
+                            'YTick',0:10:30)
                     case 3
                         set(gca,'XLim',[0 rtLim], ...
                             'XTick',0:100:rtLim, ...
